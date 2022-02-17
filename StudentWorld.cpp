@@ -31,7 +31,7 @@ int StudentWorld::move()
     // This code is here merely to allow the game to build, run, and terminate after you hit enter.
     // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
     m_peach->doSomething();
-    //decLives();
+   // decLives();
 
     return GWSTATUS_CONTINUE_GAME;
 }
@@ -75,8 +75,7 @@ void StudentWorld::createLevel()
                     break;
 
                 case Level::peach:
-                    ptr = new Peach(this, IID_PEACH, 8 * x, 8 * y, 1, 1, 1);
-                    actorList.push_back(ptr);
+                    m_peach = new Peach(this, IID_PEACH, 8 * x, 8 * y, 1, 1, 1);
                     break;
                 }
             }
