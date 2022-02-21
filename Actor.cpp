@@ -12,14 +12,32 @@ Actor::Actor(StudentWorld* world, int imageID, int startX, int startY, int start
 Actor::~Actor()
 {}
 
+bool Actor::canBlock()
+{
+	return false;
+}
+
 StudentWorld* Actor::getWorld() const
 {
 	return m_world;
 }
 
+/*****Sationary Actors Base Class*****/
+stationaryActors::stationaryActors(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Actor(world, imageID, startX, startY, startDirection, depth, size)
+{}
+stationaryActors::~stationaryActors()
+{}
+
+bool stationaryActors::canBlock()
+{
+	return true;
+}
+
+
 /*****Block*****/
 Block::Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
-	:Actor(world, imageID, startX, startY, startDirection, depth, size)
+	:stationaryActors(world, imageID, startX, startY, startDirection, depth, size)
 {}
 Block::~Block()
 {}
@@ -65,14 +83,27 @@ void Peach::doSomething()
 		{
 		case KEY_PRESS_LEFT:
 			setDirection(left);
-			moveTo(getX() - 4, getY());
+			if (getWorld()->isBlockedPath(this) == false)
+			{
+				moveTo(getX() - 4, getY());
+			}
 			break;
 
 		case KEY_PRESS_RIGHT:
 			setDirection(right);
-			moveTo(getX() + 4, getY());
+			if (getWorld()->isBlockedPath(this) == false)
+			{
+				moveTo(getX() + 4, getY());
+			}
 			break;
-
+			/*
+		case KEY_PRESS_UP:
+			if (getWorld()->isBlockedPath(this) == false)
+			{
+				moveTo(getX(), getY() + 4);
+			}
+			break;
+			*/
 		default:
 			break;
 		}
