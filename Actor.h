@@ -15,15 +15,31 @@ public:
     virtual ~Actor();
 
     virtual void doSomething() = 0;
-    
+
+	virtual bool canBlock();
+
 	StudentWorld* getWorld() const;
 
 private:
 	StudentWorld* m_world;
 };
 
+/*****Stationary Actor Base Class*****/
+class stationaryActors : public Actor
+{
+public:
+	stationaryActors(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~stationaryActors();
+
+	virtual bool canBlock();
+
+private:
+
+};
+
+
 /*****Block*****/
-class Block : public Actor
+class Block : public stationaryActors
 {
 public:
 
