@@ -19,7 +19,8 @@ public:
     virtual int move();
     virtual void cleanUp();
 
-    void createLevel();
+    bool createLevel(int lev);
+    bool isBlockedPath(Actor *p);
 
 private:
     //maintain the list of actors: //blocks
