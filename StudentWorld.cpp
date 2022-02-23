@@ -44,9 +44,8 @@ int StudentWorld::move()
     // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
     m_peach->doSomething();
 
-
     vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++)
+    for (it = actorList.begin(); it != actorList.end(); it++) //telling all actors in vector to do something
     {
         (*it)->doSomething();
     }
@@ -58,16 +57,16 @@ int StudentWorld::move()
 
 void StudentWorld::cleanUp()
 {
-    delete m_peach;
+    delete m_peach; //delteing main character
     m_peach = nullptr;
 
     vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++)
+    for (it = actorList.begin(); it != actorList.end(); it++) //deleteing all actors in vector
     {
         delete* it;
         it = actorList.erase(it);
     }
-    actorList.clear();
+    actorList.clear(); //clearing vector
 }
 
 bool StudentWorld::createLevel(int lev)
@@ -75,11 +74,11 @@ bool StudentWorld::createLevel(int lev)
     actorList.clear();
 
     stringstream str;
-    str << "level" << setfill('0') << setw(2) << lev;
+    str << "level" << setfill('0') << setw(2) << lev; //setting proper level number
     string str2 = str.str();
 
     Level curLev(assetPath());
-    Level::LoadResult result = curLev.loadLevel(str2 + ".txt");
+    Level::LoadResult result = curLev.loadLevel(str2 + ".txt"); //getting proper level contents
 
     if (result == Level::load_fail_file_not_found)
     {
@@ -95,11 +94,11 @@ bool StudentWorld::createLevel(int lev)
     {
         cerr << "Successfully loaded level" << endl;
         Level::GridEntry mapEntry;
-        for (int x = 0; x < VIEW_WIDTH; x++)
+        for (int x = 0; x < VIEW_WIDTH; x++) //iterating through text file
             for (int y = 0; y < VIEW_HEIGHT; y++)
             {
                 mapEntry = curLev.getContentsOf(x, y);
-                
+                //making new actors based off the charaters found in the level.txt file
                 Actor* ptr;
                 switch (mapEntry)
                 {
@@ -114,6 +113,12 @@ bool StudentWorld::createLevel(int lev)
                     ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0);
                     actorList.push_back(ptr);
                     break;
+                    /*
+                case Level::pipe:
+                    ptr = new Pipe(this, IID_PIPE, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0);
+                    actorList.push_back(ptr);
+                    break;
+                    */
                 }
             }
         return true;
@@ -121,26 +126,28 @@ bool StudentWorld::createLevel(int lev)
     return false;
 }
 
-bool StudentWorld::isBlockedPath(Actor *player)
+bool* StudentWorld::isBlockedPath(Actor *player)
 {
+    bool amountTrue[4] = { false, false, false, false };
     vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++)
+    for (it = actorList.begin(); it != actorList.end(); it++) //iterating through actor vector
     {
         if (*it == player)
         {
             continue;
         }
         
-        double checkObjectX = (*it)->getX();
+        double checkObjectX = (*it)->getX(); 
         double checkObjectY = (*it)->getY();
 
         if (player->getDirection() == 0)
         {
-            if (player->getX() + 4 == checkObjectX - 4  && player->getY() == checkObjectY)
+            //east
+            if (player->getX() + 4 == checkObjectX - 4  && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
             {
-                if ((*it)->canBlock())
+                if ((*it)->canBlock()) //checking if that object blocks other objects
                 {
-                    return true;
+                    amountTrue[2] = true;
 
                 }
             }
@@ -148,24 +155,25 @@ bool StudentWorld::isBlockedPath(Actor *player)
 
         if (player->getDirection() == 180)
         {
-            if (player->getX() - 4 == checkObjectX + 4 && player->getY() == checkObjectY)
+            if (player->getX() - 4 == checkObjectX + 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
             {
-                if ((*it)->canBlock())
+                //west
+                if ((*it)->canBlock()) //checking if that object blocks other objects
                 {
-                    return true;
+                    amountTrue[3] = true;
 
                 }
             }
         }
-        /*
-        if (player->getX() == checkObjectX && player->getY() + 4 == checkObjectY - 4)
+
+        if (player->getY() + 4 == checkObjectY - 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
         {
-            if ((*it)->canBlock())
-            {
-                return true;
-            }
+            amountTrue[0] = true;
         }
-        */
+        if (player->getY() - 4 == checkObjectY + 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
+        {
+            amountTrue[1] = true;
+        }
     }
-    return false;
+    return amountTrue;
 }
