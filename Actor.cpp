@@ -16,6 +16,10 @@ bool Actor::canBlock()
 {
 	return false;
 }
+bool Actor::isAlive()
+{
+	return true;
+}
 
 StudentWorld* Actor::getWorld() const
 {
@@ -43,6 +47,17 @@ Block::~Block()
 {}
 
 void Block::doSomething()
+{}
+
+
+/*****Pipes*****/
+Pipe::Pipe(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:stationaryActors(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Pipe::~Pipe()
+{}
+
+void Pipe::doSomething()
 {}
 
 
@@ -74,16 +89,17 @@ int Peach::getHP()
 
 void Peach::doSomething()
 {
-	
+	//key inputs
 	int keyPress;
+
 	if (getWorld()->getKey(keyPress))
 	{
-
+		
 		switch (keyPress)
 		{
 		case KEY_PRESS_LEFT:
 			setDirection(left);
-			if (getWorld()->isBlockedPath(this) == false)
+			if (getWorld()->isBlockedPath(this)[3] == false) //blocked path doesn't allow you to move but can change directions
 			{
 				moveTo(getX() - 4, getY());
 			}
@@ -91,19 +107,26 @@ void Peach::doSomething()
 
 		case KEY_PRESS_RIGHT:
 			setDirection(right);
-			if (getWorld()->isBlockedPath(this) == false)
+			if (getWorld()->isBlockedPath(this)[2] == false)//blocked path doesn't allow you to move but can change directions
 			{
 				moveTo(getX() + 4, getY());
 			}
 			break;
-			/*
+			
 		case KEY_PRESS_UP:
-			if (getWorld()->isBlockedPath(this) == false)
+			if (getWorld()->isBlockedPath(this)[0] == false)//blocked path doesn't allow you to move but can change directions
 			{
 				moveTo(getX(), getY() + 4);
 			}
 			break;
-			*/
+		
+		case KEY_PRESS_DOWN:
+			if (getWorld()->isBlockedPath(this)[1] == false)
+			{
+				moveTo(getX(), getY() - 4);
+			}
+			break;
+
 		default:
 			break;
 		}
