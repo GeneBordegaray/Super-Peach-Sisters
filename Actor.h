@@ -17,6 +17,7 @@ public:
     virtual void doSomething() = 0;
 
 	virtual bool canBlock();
+	virtual bool isAlive();
 
 	StudentWorld* getWorld() const;
 
@@ -45,6 +46,18 @@ public:
 
 	Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~Block();
+
+	virtual void doSomething();
+};
+
+
+/*****Pipes*****/
+class Pipe : public stationaryActors
+{
+public:
+
+	Pipe(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Pipe();
 
 	virtual void doSomething();
 };
