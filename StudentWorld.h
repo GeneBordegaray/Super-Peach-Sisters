@@ -20,7 +20,7 @@ public:
     virtual void cleanUp();
 
     bool createLevel(int lev);
-    bool isBlockedPath(Actor *p);
+    bool* isBlockedPath(Actor *player);
 
 private:
     //maintain the list of actors: //blocks
