@@ -42,14 +42,9 @@ int StudentWorld::move()
 {
     // This code is here merely to allow the game to build, run, and terminate after you hit enter.
     // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-   /*
-    bool directionCheck[4];
-    if (isBlockedPath(m_peach, directionCheck)[1] == false)
-    {
-        m_peach->moveTo(m_peach->getX(), m_peach->getY() - 4);
-    }
-    */
+
     m_peach->doSomething();
+
     vector<Actor*>::iterator it;
     for (it = actorList.begin(); it != actorList.end(); it++) //telling all actors in vector to do something
     {
@@ -125,6 +120,10 @@ bool StudentWorld::createLevel(int lev)
                     actorList.push_back(ptr);
                     break;
                     
+                case Level::goomba:
+                    ptr = new Goomba(this, IID_GOOMBA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 1, 0);
+                    actorList.push_back(ptr);
+                    break;
                 }
             }
         return true;
