@@ -16,6 +16,8 @@ public:
 
     virtual void doSomething() = 0;
 
+	virtual void bonk() = 0;
+
 	virtual bool canBlock();
 	virtual bool doesDamage();
 	virtual bool isAlive();
@@ -61,6 +63,7 @@ public:
 	virtual ~Block();
 
 	virtual void doSomething();
+	virtual void bonk();
 };
 
 
@@ -73,6 +76,7 @@ public:
 	virtual ~Pipe();
 
 	virtual void doSomething();
+	virtual void bonk();
 };
 
 /*****Peach Class*****/
@@ -93,6 +97,7 @@ public:
 	void decJumpPower();
 
 	virtual void doSomething();
+	virtual void bonk();
 
 private:
 	int m_hp;
@@ -107,6 +112,7 @@ public:
 	virtual ~Goomba();
 
 	virtual void doSomething();
+	virtual void bonk();
 
 private:
 
