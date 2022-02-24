@@ -42,8 +42,14 @@ int StudentWorld::move()
 {
     // This code is here merely to allow the game to build, run, and terminate after you hit enter.
     // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
+   /*
+    bool directionCheck[4];
+    if (isBlockedPath(m_peach, directionCheck)[1] == false)
+    {
+        m_peach->moveTo(m_peach->getX(), m_peach->getY() - 4);
+    }
+    */
     m_peach->doSomething();
-
     vector<Actor*>::iterator it;
     for (it = actorList.begin(); it != actorList.end(); it++) //telling all actors in vector to do something
     {
@@ -113,12 +119,12 @@ bool StudentWorld::createLevel(int lev)
                     ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0);
                     actorList.push_back(ptr);
                     break;
-                    /*
+                    
                 case Level::pipe:
                     ptr = new Pipe(this, IID_PIPE, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0);
                     actorList.push_back(ptr);
                     break;
-                    */
+                    
                 }
             }
         return true;
@@ -126,9 +132,13 @@ bool StudentWorld::createLevel(int lev)
     return false;
 }
 
-bool* StudentWorld::isBlockedPath(Actor *player)
+bool* StudentWorld::isBlockedPath(Actor *player, bool amountTrue[4])
 {
-    bool amountTrue[4] = { false, false, false, false };
+    amountTrue[0] = false;
+    amountTrue[1] = false;
+    amountTrue[2] = false;
+    amountTrue[3] = false;
+
     vector<Actor*>::iterator it;
     for (it = actorList.begin(); it != actorList.end(); it++) //iterating through actor vector
     {
