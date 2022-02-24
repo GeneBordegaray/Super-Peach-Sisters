@@ -17,6 +17,7 @@ public:
     virtual void doSomething() = 0;
 
 	virtual bool canBlock();
+	virtual bool doesDamage();
 	virtual bool isAlive();
 
 	StudentWorld* getWorld() const;
@@ -45,6 +46,8 @@ class badGuy : public Actor
 public:
 	badGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~badGuy();
+
+	virtual bool doesDamage();
 
 private:
 };
@@ -83,6 +86,7 @@ public:
 	virtual bool isAlive();
 	void setHP(int hp);
 	int getHP();
+	void decHP();
 
 	int getJumpPower();
 	void setJumpPower(int remaining_jump_power);
