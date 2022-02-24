@@ -64,6 +64,10 @@ Block::~Block()
 
 void Block::doSomething()
 {}
+void Block::bonk()
+{
+	getWorld()->playSound(SOUND_PLAYER_BONK);
+}
 
 
 /*****Pipes*****/
@@ -75,6 +79,10 @@ Pipe::~Pipe()
 
 void Pipe::doSomething()
 {}
+void Pipe::bonk()
+{
+	return;
+}
 
 
 /*****Peach*****/
@@ -124,10 +132,14 @@ void Peach::decJumpPower()
 
 void Peach::doSomething()
 {
-	if (getWorld()->overLapBadGuy(this) == true)
+	if (isAlive() == false)
 	{
-		this->decHP();
-		this->isAlive();
+		return;
+	}
+
+	if (getWorld()->overObject(this) == true)
+	{
+		bonk();
 	}
 
 	bool directionCheck[4];
@@ -178,6 +190,7 @@ void Peach::doSomething()
 			}
 			break;
 			
+		//north
 		case KEY_PRESS_UP:
 			if (getWorld()->isBlockedPath(this, directionCheck)[1] == true)//blocked path doesn't allow you to move but can change directions
 			{
@@ -186,19 +199,14 @@ void Peach::doSomething()
 			getWorld()->playSound(SOUND_PLAYER_JUMP);
 			break;
 		
-		case KEY_PRESS_DOWN:
-			if (getWorld()->isBlockedPath(this, directionCheck)[1] == false)
-			{
-				moveTo(getX(), getY() - 4);
-			}
-			break;
-
-		default:
-			break;
 		}
 	
 	}
 return;
+}
+void Peach::bonk()
+{
+	return;
 }
 
 
@@ -235,3 +243,5 @@ void Goomba::doSomething()
 		moveTo(getX() - 1, getY());
 	}
 }
+void Goomba::bonk()
+{}
