@@ -23,6 +23,7 @@ public:
 
 private:
 	StudentWorld* m_world;
+	bool m_alive;
 };
 
 /*****Stationary Actor Base Class*****/
@@ -38,6 +39,15 @@ private:
 
 };
 
+/*****Bad Guy Base Class*****/
+class badGuy : public Actor
+{
+public:
+	badGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~badGuy();
+
+private:
+};
 
 /*****Block*****/
 class Block : public stationaryActors
@@ -70,7 +80,7 @@ public:
 	Peach(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~Peach();
 
-	bool isAlive();
+	virtual bool isAlive();
 	void setHP(int hp);
 	int getHP();
 
@@ -84,44 +94,18 @@ private:
 	int m_hp;
 	int remaining_jump_power;
 };
-/*
-class StudentWorld;
 
-class Actor : public GraphObject
+/*****Goomba Class*****/
+class Goomba : public badGuy
 {
 public:
-	Actor(StudentWorld* world, int imageID, int startX, int startY, int dir, int depth, double size); //Actor Constructor
-	virtual ~Actor();
-
-	virtual void doSomething() = 0; //what the character is doing per tick
-	
-	virtual bool isAlive() const; //check that teh actor is alive per tick
-	void dead(); //sets to dead is run out of lives
-
-	//virtual bool canBeHit(); //check if can be hit by fireball
-	//virtual bool canBeEaten(); // check if peach can eat 
-
-	StudentWorld* getWorld() const;
-
-private:
-	bool m_alive;
-	StudentWorld* m_world;
-};
-
-
-class Peach : public Actor
-{
-public:
-	Peach(StudentWorld* world, int imageID, int startX, int startY, int dir, int depth, double size);
-	virtual ~Peach();
+	Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Goomba();
 
 	virtual void doSomething();
 
-	void setHP(int hp);
-	int getHP() const;
-
 private:
-	int m_hp;
+
 };
-*/
+
 #endif // ACTOR_H_
