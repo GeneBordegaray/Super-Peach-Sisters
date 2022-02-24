@@ -42,8 +42,14 @@ int StudentWorld::move()
 {
     // This code is here merely to allow the game to build, run, and terminate after you hit enter.
     // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-
-    m_peach->doSomething();
+    if (m_peach->isAlive() == true)
+    {
+        m_peach->doSomething();
+    }
+    else
+    {
+        return GWSTATUS_PLAYER_DIED;
+    }
 
     vector<Actor*>::iterator it;
     for (it = actorList.begin(); it != actorList.end(); it++) //telling all actors in vector to do something
@@ -111,6 +117,9 @@ bool StudentWorld::createLevel(int lev)
                     break;
 
                 case Level::block:
+                case Level::flower_goodie_block:
+                case Level::mushroom_goodie_block:
+                case Level::star_goodie_block:
                     ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0);
                     actorList.push_back(ptr);
                     break;
@@ -185,4 +194,59 @@ bool* StudentWorld::isBlockedPath(Actor *player, bool amountTrue[4])
         }
     }
     return amountTrue;
+}
+
+
+bool StudentWorld::overLapBadGuy(Actor* player)
+{
+    vector<Actor*>::iterator it;
+    for (it = actorList.begin(); it != actorList.end(); it++)
+    {
+        if (*it == player)
+        {
+            continue;
+        }
+
+        double checkObjectX = (*it)->getX();
+        double checkObjectY = (*it)->getY();
+
+        if (player->getDirection() == 0)
+        {
+            //east
+            if (player->getX() + 4 == checkObjectX - 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
+            {
+                if ((*it)->doesDamage())
+                {
+                    return true;
+                }
+            }
+        }
+
+        if (player->getDirection() == 180)
+        {
+            if (player->getX() - 4 == checkObjectX + 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
+            {
+                if ((*it)->doesDamage())
+                {
+                    return true;
+                }
+            }
+        }
+
+        if (player->getY() + 4 == checkObjectY - 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
+        {
+            if ((*it)->doesDamage())
+            {
+                return true;
+            }
+        }
+        if (player->getY() - 4 == checkObjectY + 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
+        {
+            if ((*it)->doesDamage())
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
