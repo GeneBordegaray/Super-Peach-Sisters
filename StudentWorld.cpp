@@ -71,7 +71,6 @@ void StudentWorld::cleanUp()
     for (it = actorList.begin(); it != actorList.end(); it++) //deleteing all actors in vector
     {
         delete* it;
-        it = actorList.erase(it);
     }
     actorList.clear(); //clearing vector
 }
@@ -210,26 +209,19 @@ bool StudentWorld::overLapBadGuy(Actor* player)
         double checkObjectX = (*it)->getX();
         double checkObjectY = (*it)->getY();
 
-        if (player->getDirection() == 0)
+
+        if (player->getX() + 4 == checkObjectX - 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
         {
-            //east
-            if (player->getX() + 4 == checkObjectX - 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
+            if ((*it)->doesDamage())
             {
-                if ((*it)->doesDamage())
-                {
-                    return true;
-                }
+              return true;
             }
         }
-
-        if (player->getDirection() == 180)
+        if (player->getX() - 4 == checkObjectX + 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
         {
-            if (player->getX() - 4 == checkObjectX + 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
+            if ((*it)->doesDamage())
             {
-                if ((*it)->doesDamage())
-                {
-                    return true;
-                }
+                return true;
             }
         }
 
