@@ -17,6 +17,10 @@ bool Actor::canBlock()
 {
 	return false;
 }
+bool Actor::doesDamage()
+{
+	return false;
+}
 bool Actor::isAlive()
 {
 	return m_alive;
@@ -46,6 +50,10 @@ badGuy::badGuy(StudentWorld* world, int imageID, int startX, int startY, int sta
 badGuy::~badGuy()
 {}
 
+bool badGuy::doesDamage()
+{
+	return true;
+}
 
 /*****Block*****/
 Block::Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
@@ -73,7 +81,7 @@ void Pipe::doSomething()
 Peach::Peach(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
 {
-	m_hp = 3;
+	m_hp = 1;
 	remaining_jump_power = 0;
 }
 Peach::~Peach()
@@ -95,6 +103,10 @@ int Peach::getHP()
 {
 	return m_hp;
 }
+void Peach::decHP()
+{
+	m_hp--;
+}
 
 
 int Peach::getJumpPower()
@@ -112,6 +124,12 @@ void Peach::decJumpPower()
 
 void Peach::doSomething()
 {
+	if (getWorld()->overLapBadGuy(this) == true)
+	{
+		this->decHP();
+		this->isAlive();
+	}
+
 	bool directionCheck[4];
 
 	if (getJumpPower() > 0)
