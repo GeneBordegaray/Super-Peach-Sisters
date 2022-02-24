@@ -1,244 +1,229 @@
+#include "Actor.h"
 #include "StudentWorld.h"
-#include "GameConstants.h"
-#include <string>
-#include <sstream>
-#include <iomanip>
-using namespace std;
 
-GameWorld* createStudentWorld(string assetPath)
+// Students:  Add code to this file, Actor.h, StudentWorld.h, and StudentWorld.cpp
+
+/*****Base Actor*****/
+Actor::Actor(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:GraphObject(imageID, startX, startY, startDirection, depth, size)
 {
-	return new StudentWorld(assetPath);
+	m_world = world;
+	m_alive = true;
+}
+Actor::~Actor()
+{}
+
+bool Actor::canBlock()
+{
+	return false;
+}
+bool Actor::doesDamage()
+{
+	return false;
+}
+bool Actor::isAlive()
+{
+	return m_alive;
 }
 
-// Students:  Add code to this file, StudentWorld.h, Actor.h, and Actor.cpp
-
-StudentWorld::StudentWorld(string assetPath)
-: GameWorld(assetPath)
+StudentWorld* Actor::getWorld() const
 {
-    m_peach = nullptr;
-}
-StudentWorld::~StudentWorld()
-{
-    cleanUp();
+	return m_world;
 }
 
+/*****Sationary Actors Base Class*****/
+stationaryActors::stationaryActors(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Actor(world, imageID, startX, startY, startDirection, depth, size)
+{}
+stationaryActors::~stationaryActors()
+{}
 
-int StudentWorld::init()
+bool stationaryActors::canBlock()
 {
-    if (getLevel() > 99)
-    {
-        return GWSTATUS_PLAYER_WON;
-    }
-    if (createLevel(getLevel()) == false)
-    {
-        return GWSTATUS_LEVEL_ERROR;
-    }
-
-    return GWSTATUS_CONTINUE_GAME;
+	return true;
 }
 
+/*****Bad Guy Base Class*****/
+badGuy::badGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Actor(world, imageID, startX, startY, startDirection, depth, size)
+{}
+badGuy::~badGuy()
+{}
 
-int StudentWorld::move()
+bool badGuy::doesDamage()
 {
-    // This code is here merely to allow the game to build, run, and terminate after you hit enter.
-    // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-    if (m_peach->isAlive() == true)
-    {
-        m_peach->doSomething();
-    }
-    else
-    {
-        return GWSTATUS_PLAYER_DIED;
-    }
-
-    vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++) //telling all actors in vector to do something
-    {
-        (*it)->doSomething();
-    }
-   
-   // decLives();
-
-    return GWSTATUS_CONTINUE_GAME;
+	return true;
 }
 
-void StudentWorld::cleanUp()
-{
-    delete m_peach; //delteing main character
-    m_peach = nullptr;
+/*****Block*****/
+Block::Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:stationaryActors(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Block::~Block()
+{}
 
-    vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++) //deleteing all actors in vector
-    {
-        delete* it;
-    }
-    actorList.clear(); //clearing vector
+void Block::doSomething()
+{}
+
+
+/*****Pipes*****/
+Pipe::Pipe(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:stationaryActors(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Pipe::~Pipe()
+{}
+
+void Pipe::doSomething()
+{}
+
+
+/*****Peach*****/
+Peach::Peach(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Actor(world, imageID, startX, startY, startDirection, depth, size)
+{
+	m_hp = 1;
+	remaining_jump_power = 0;
 }
+Peach::~Peach()
+{}
 
-bool StudentWorld::createLevel(int lev)
+bool Peach::isAlive()
 {
-    actorList.clear();
-
-    stringstream str;
-    str << "level" << setfill('0') << setw(2) << lev; //setting proper level number
-    string str2 = str.str();
-
-    Level curLev(assetPath());
-    Level::LoadResult result = curLev.loadLevel(str2 + ".txt"); //getting proper level contents
-
-    if (result == Level::load_fail_file_not_found)
-    {
-        cerr << "Could not find level01.txt data file" << endl;
-        return false;
-    }
-    else if (result == Level::load_fail_bad_format)
-    {
-        cerr << "level01.txt is improperly formatted" << endl;
-        return false;
-    }
-    else if (result == Level::load_success)
-    {
-        cerr << "Successfully loaded level" << endl;
-        Level::GridEntry mapEntry;
-        for (int x = 0; x < VIEW_WIDTH; x++) //iterating through text file
-            for (int y = 0; y < VIEW_HEIGHT; y++)
-            {
-                mapEntry = curLev.getContentsOf(x, y);
-                //making new actors based off the charaters found in the level.txt file
-                Actor* ptr;
-                switch (mapEntry)
-                {
-                case Level::empty:
-                    break;
-
-                case Level::peach:
-                    m_peach = new Peach(this, IID_PEACH, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 0, 1.0);
-                    break;
-
-                case Level::block:
-                case Level::flower_goodie_block:
-                case Level::mushroom_goodie_block:
-                case Level::star_goodie_block:
-                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0);
-                    actorList.push_back(ptr);
-                    break;
-                    
-                case Level::pipe:
-                    ptr = new Pipe(this, IID_PIPE, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0);
-                    actorList.push_back(ptr);
-                    break;
-                    
-                case Level::goomba:
-                    ptr = new Goomba(this, IID_GOOMBA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 1, 0);
-                    actorList.push_back(ptr);
-                    break;
-                }
-            }
-        return true;
-    }
-    return false;
+	if (m_hp > 0)
+	{
+		return true;
+	}
+	return false;
 }
-
-bool* StudentWorld::isBlockedPath(Actor *player, bool amountTrue[4])
+void Peach::setHP(int hp)
 {
-    amountTrue[0] = false;
-    amountTrue[1] = false;
-    amountTrue[2] = false;
-    amountTrue[3] = false;
-
-    vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++) //iterating through actor vector
-    {
-        if (*it == player)
-        {
-            continue;
-        }
-        
-        double checkObjectX = (*it)->getX(); 
-        double checkObjectY = (*it)->getY();
-
-        if (player->getDirection() == 0)
-        {
-            //east
-            if (player->getX() + 4 == checkObjectX - 4  && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
-            {
-                if ((*it)->canBlock()) //checking if that object blocks other objects
-                {
-                    amountTrue[2] = true;
-
-                }
-            }
-        }
-
-        if (player->getDirection() == 180)
-        {
-            if (player->getX() - 4 == checkObjectX + 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
-            {
-                //west
-                if ((*it)->canBlock()) //checking if that object blocks other objects
-                {
-                    amountTrue[3] = true;
-
-                }
-            }
-        }
-
-        if (player->getY() + 4 == checkObjectY - 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
-        {
-            amountTrue[0] = true;
-        }
-        if (player->getY() - 4 == checkObjectY + 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
-        {
-            amountTrue[1] = true;
-        }
-    }
-    return amountTrue;
+	m_hp = hp;
+}
+int Peach::getHP()
+{
+	return m_hp;
+}
+void Peach::decHP()
+{
+	m_hp--;
 }
 
 
-bool StudentWorld::overLapBadGuy(Actor* player)
+int Peach::getJumpPower()
 {
-    vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++)
-    {
-        if (*it == player)
-        {
-            continue;
-        }
+	return remaining_jump_power;
+}
+void Peach::setJumpPower(int num)
+{
+	remaining_jump_power = num;
+}
+void Peach::decJumpPower()
+{
+	remaining_jump_power--;
+}
 
-        double checkObjectX = (*it)->getX();
-        double checkObjectY = (*it)->getY();
+void Peach::doSomething()
+{
+	if (getWorld()->overLapBadGuy(this) == true)
+	{
+		this->decHP();
+		this->isAlive();
+	}
+
+	bool directionCheck[4];
+
+	if (getJumpPower() > 0)
+	{
+		if (getWorld()->isBlockedPath(this, directionCheck)[0] == true)
+		{
+			setJumpPower(0);
+		}
+		else
+		{
+			moveTo(getX(), getY() + 4);
+			decJumpPower();
+		}
+	}
+	else
+	{
+		if (getWorld()->isBlockedPath(this, directionCheck)[1] == false)
+		{
+			moveTo(getX(), getY() - 4);
+		}
+	}
 
 
-        if (player->getX() + 4 == checkObjectX - 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
-        {
-            if ((*it)->doesDamage())
-            {
-              return true;
-            }
-        }
-        if (player->getX() - 4 == checkObjectX + 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
-        {
-            if ((*it)->doesDamage())
-            {
-                return true;
-            }
-        }
+	//key inputs
+	int keyPress;
+	if (getWorld()->getKey(keyPress))
+	{
+		
+		switch (keyPress)
+		{
+		//west
+		case KEY_PRESS_LEFT:
+			setDirection(left);
+			if (getWorld()->isBlockedPath(this, directionCheck)[3] == false) //blocked path doesn't allow you to move but can change directions
+			{
+				moveTo(getX() - 4, getY());
+			}
+			break;
 
-        if (player->getY() + 4 == checkObjectY - 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
-        {
-            if ((*it)->doesDamage())
-            {
-                return true;
-            }
-        }
-        if (player->getY() - 4 == checkObjectY + 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
-        {
-            if ((*it)->doesDamage())
-            {
-                return true;
-            }
-        }
-    }
-    return false;
+		//east
+		case KEY_PRESS_RIGHT:
+			setDirection(right);
+			if (getWorld()->isBlockedPath(this, directionCheck)[2] == false)//blocked path doesn't allow you to move but can change directions
+			{
+				moveTo(getX() + 4, getY());
+			}
+			break;
+			
+		//north
+		case KEY_PRESS_UP:
+			if (getWorld()->isBlockedPath(this, directionCheck)[1] == true)//blocked path doesn't allow you to move but can change directions
+			{
+				setJumpPower(8);
+			}
+			getWorld()->playSound(SOUND_PLAYER_JUMP);
+			break;
+		
+		}
+	
+	}
+return;
+}
+
+
+/*****Goomba Class*****/
+Goomba::Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	: badGuy(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Goomba::~Goomba()
+{}
+
+void Goomba::doSomething()
+{
+	//std::cout << "hey";
+	bool directionCheck[4];
+
+	//west
+	if (getWorld()->isBlockedPath(this, directionCheck)[3] == true) //blocked path doesn't allow you to move but can change directions
+	{
+		setDirection(0);
+	}
+
+	//east
+	if (getWorld()->isBlockedPath(this, directionCheck)[2] == true)//blocked path doesn't allow you to move but can change directions
+	{
+		setDirection(180);
+	}
+
+	if (getDirection() == 0) //check which way goomba is facing
+	{
+		moveTo(getX() + 1, getY());
+	}
+	else //check which way the goomba is moving
+	{
+		moveTo(getX() - 1, getY());
+	}
 }
