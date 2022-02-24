@@ -74,10 +74,15 @@ public:
 	void setHP(int hp);
 	int getHP();
 
+	int getJumpPower();
+	void setJumpPower(int remaining_jump_power);
+	void decJumpPower();
+
 	virtual void doSomething();
 
 private:
 	int m_hp;
+	int remaining_jump_power;
 };
 /*
 class StudentWorld;
