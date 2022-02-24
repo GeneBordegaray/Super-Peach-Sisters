@@ -66,6 +66,7 @@ Peach::Peach(StudentWorld* world, int imageID, int startX, int startY, int start
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
 {
 	m_hp = 3;
+	remaining_jump_power = 0;
 }
 Peach::~Peach()
 {}
@@ -87,11 +88,47 @@ int Peach::getHP()
 	return m_hp;
 }
 
+
+int Peach::getJumpPower()
+{
+	return remaining_jump_power;
+}
+void Peach::setJumpPower(int num)
+{
+	remaining_jump_power = num;
+}
+void Peach::decJumpPower()
+{
+	remaining_jump_power--;
+}
+
 void Peach::doSomething()
 {
+	bool directionCheck[4];
+
+	if (getJumpPower() > 0)
+	{
+		if (getWorld()->isBlockedPath(this, directionCheck)[0] == true)
+		{
+			setJumpPower(0);
+		}
+		else
+		{
+			moveTo(getX(), getY() + 4);
+			decJumpPower();
+		}
+	}
+	else
+	{
+		if (getWorld()->isBlockedPath(this, directionCheck)[1] == false)
+		{
+			moveTo(getX(), getY() - 4);
+		}
+	}
+
+
 	//key inputs
 	int keyPress;
-
 	if (getWorld()->getKey(keyPress))
 	{
 		
@@ -99,7 +136,7 @@ void Peach::doSomething()
 		{
 		case KEY_PRESS_LEFT:
 			setDirection(left);
-			if (getWorld()->isBlockedPath(this)[3] == false) //blocked path doesn't allow you to move but can change directions
+			if (getWorld()->isBlockedPath(this, directionCheck)[3] == false) //blocked path doesn't allow you to move but can change directions
 			{
 				moveTo(getX() - 4, getY());
 			}
@@ -107,21 +144,22 @@ void Peach::doSomething()
 
 		case KEY_PRESS_RIGHT:
 			setDirection(right);
-			if (getWorld()->isBlockedPath(this)[2] == false)//blocked path doesn't allow you to move but can change directions
+			if (getWorld()->isBlockedPath(this, directionCheck)[2] == false)//blocked path doesn't allow you to move but can change directions
 			{
 				moveTo(getX() + 4, getY());
 			}
 			break;
 			
 		case KEY_PRESS_UP:
-			if (getWorld()->isBlockedPath(this)[0] == false)//blocked path doesn't allow you to move but can change directions
+			if (getWorld()->isBlockedPath(this, directionCheck)[1] == true)//blocked path doesn't allow you to move but can change directions
 			{
-				moveTo(getX(), getY() + 4);
+				setJumpPower(8);
 			}
+			getWorld()->playSound(SOUND_PLAYER_JUMP);
 			break;
 		
 		case KEY_PRESS_DOWN:
-			if (getWorld()->isBlockedPath(this)[1] == false)
+			if (getWorld()->isBlockedPath(this, directionCheck)[1] == false)
 			{
 				moveTo(getX(), getY() - 4);
 			}
