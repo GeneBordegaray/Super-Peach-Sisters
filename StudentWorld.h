@@ -20,11 +20,11 @@ public:
     virtual void cleanUp();
 
     bool createLevel(int lev);
-    bool* isBlockedPath(Actor *player);
+    bool* isBlockedPath(Actor *player, bool amountTrue[4]);
 
 private:
     //maintain the list of actors: //blocks
-    Peach* m_peach;
+   Peach* m_peach;
 
    std:: vector<Actor*> actorList;
 };
