@@ -8,6 +8,7 @@ Actor::Actor(StudentWorld* world, int imageID, int startX, int startY, int start
 	:GraphObject(imageID, startX, startY, startDirection, depth, size)
 {
 	m_world = world;
+	m_alive = true;
 }
 Actor::~Actor()
 {}
@@ -18,7 +19,7 @@ bool Actor::canBlock()
 }
 bool Actor::isAlive()
 {
-	return true;
+	return m_alive;
 }
 
 StudentWorld* Actor::getWorld() const
@@ -37,6 +38,13 @@ bool stationaryActors::canBlock()
 {
 	return true;
 }
+
+/*****Bad Guy Base Class*****/
+badGuy::badGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Actor(world, imageID, startX, startY, startDirection, depth, size)
+{}
+badGuy::~badGuy()
+{}
 
 
 /*****Block*****/
@@ -134,6 +142,7 @@ void Peach::doSomething()
 		
 		switch (keyPress)
 		{
+		//west
 		case KEY_PRESS_LEFT:
 			setDirection(left);
 			if (getWorld()->isBlockedPath(this, directionCheck)[3] == false) //blocked path doesn't allow you to move but can change directions
@@ -142,6 +151,7 @@ void Peach::doSomething()
 			}
 			break;
 
+		//east
 		case KEY_PRESS_RIGHT:
 			setDirection(right);
 			if (getWorld()->isBlockedPath(this, directionCheck)[2] == false)//blocked path doesn't allow you to move but can change directions
@@ -171,4 +181,39 @@ void Peach::doSomething()
 	
 	}
 return;
+}
+
+
+/*****Goomba Class*****/
+Goomba::Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	: badGuy(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Goomba::~Goomba()
+{}
+
+void Goomba::doSomething()
+{
+	//std::cout << "hey";
+	bool directionCheck[4];
+
+	//west
+	if (getWorld()->isBlockedPath(this, directionCheck)[3] == true) //blocked path doesn't allow you to move but can change directions
+	{
+		setDirection(0);
+	}
+
+	//east
+	if (getWorld()->isBlockedPath(this, directionCheck)[2] == true)//blocked path doesn't allow you to move but can change directions
+	{
+		setDirection(180);
+	}
+
+	if (getDirection() == 0) //check which way goomba is facing
+	{
+		moveTo(getX() + 1, getY());
+	}
+	else //check which way the goomba is moving
+	{
+		moveTo(getX() - 1, getY());
+	}
 }
