@@ -7,13 +7,13 @@ using namespace std;
 
 GameWorld* createStudentWorld(string assetPath)
 {
-	return new StudentWorld(assetPath);
+    return new StudentWorld(assetPath);
 }
 
 // Students:  Add code to this file, StudentWorld.h, Actor.h, and Actor.cpp
 
 StudentWorld::StudentWorld(string assetPath)
-: GameWorld(assetPath)
+    : GameWorld(assetPath)
 {
     m_peach = nullptr;
 }
@@ -56,8 +56,8 @@ int StudentWorld::move()
     {
         (*it)->doSomething();
     }
-   
-   // decLives();
+
+    // decLives();
 
     return GWSTATUS_CONTINUE_GAME;
 }
@@ -122,16 +122,12 @@ bool StudentWorld::createLevel(int lev)
                     ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0);
                     actorList.push_back(ptr);
                     break;
-                    
+
                 case Level::pipe:
                     ptr = new Pipe(this, IID_PIPE, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0);
                     actorList.push_back(ptr);
                     break;
-                    
-                case Level::goomba:
-                    ptr = new Goomba(this, IID_GOOMBA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 1, 0);
-                    actorList.push_back(ptr);
-                    break;
+
                 }
             }
         return true;
@@ -139,113 +135,36 @@ bool StudentWorld::createLevel(int lev)
     return false;
 }
 
-bool* StudentWorld::isBlockedPath(Actor *player, bool amountTrue[4])
+
+bool StudentWorld::overlap(double ax, double ay, double bx, double by) const
 {
-    amountTrue[0] = false;
-    amountTrue[1] = false;
-    amountTrue[2] = false;
-    amountTrue[3] = false;
-
-    vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++) //iterating through actor vector
+    if (abs(ax - bx) < SPRITE_WIDTH && abs(ay - by) < SPRITE_HEIGHT) //checking overlapping between the two actor parameters
     {
-        if (*it == player)
-        {
-            continue;
-        }
-        
-        double checkObjectX = (*it)->getX(); 
-        double checkObjectY = (*it)->getY();
-
-        if (player->getDirection() == 0)
-        {
-            //east
-            if (player->getX() + 4 == checkObjectX - 4  && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
-            {
-                if ((*it)->canBlock()) //checking if that object blocks other objects
-                {
-                    amountTrue[2] = true;
-
-                }
-            }
-        }
-
-        if (player->getDirection() == 180)
-        {
-            if (player->getX() - 4 == checkObjectX + 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
-            {
-                //west
-                if ((*it)->canBlock()) //checking if that object blocks other objects
-                {
-                    amountTrue[3] = true;
-
-                }
-            }
-        }
-
-        if (player->getY() + 4 == checkObjectY - 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
-        {
-            amountTrue[0] = true;
-        }
-        if (player->getY() - 4 == checkObjectY + 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
-        {
-            amountTrue[1] = true;
-        }
-    }
-    return amountTrue;
-}
-
-
-bool StudentWorld::overObject(Actor* player)
-{
-    vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++)
-    {
-        if (*it == player)
-        {
-            continue;
-        }
-
-        double checkObjectX = (*it)->getX();
-        double checkObjectY = (*it)->getY();
-
-        if (player->getX() + 4 == checkObjectX - 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
-        {
-            if ((*it)->canBlock())
-            {
-                return false;
-            }
-            (*it)->bonk();
-            return true;
-        }
-        if (player->getX() - 4 == checkObjectX + 4 && (player->getY() == checkObjectY || player->getY() == checkObjectY + 4 || player->getY() + 4 == checkObjectY)) //checking to see if peach has run into an object
-        {
-            if ((*it)->canBlock())
-            {
-                return false;
-            }
-            (*it)->bonk();
-            return true;
-        }
-
-        if (player->getY() + 4 == checkObjectY - 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
-        {
-            (*it)->bonk();
-            if ((*it)->canBlock())
-            {
-                return false;
-            }
-            return true;
-        }
-        if (player->getY() - 4 == checkObjectY + 4 && ((player->getX() == checkObjectX || player->getX() == checkObjectX + 4 || player->getX() + 4 == checkObjectX)))
-        {
-            if ((*it)->canBlock())
-            {
-                return false;
-            }
-            (*it)->bonk();
-            return true;
-        }
+        return true;
     }
     return false;
+}
+
+bool StudentWorld::canMoveThere(Actor* player, double ax, double ay) const
+{
+    vector<Actor*>::const_iterator it;
+    for (it = actorList.begin(); it != actorList.end(); it++) //iterating through actor vector
+    {
+        //get the object that it is pointing to's coords
+        double bx = (*it)->getX();
+        double by = (*it)->getY();
+
+        if ((*it) == player) //check if it is pointing at the peach
+        {
+            return false;
+        }
+        if ((*it)->canBlock())
+        {
+            if (overlap(ax, ay, bx, by))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
 }
