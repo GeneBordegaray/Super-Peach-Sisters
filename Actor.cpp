@@ -1,10 +1,8 @@
 #include "Actor.h"
 #include "StudentWorld.h"
 
-// Students:  Add code to this file, Actor.h, StudentWorld.h, and StudentWorld.cpp
-
 /*****Base Actor*****/
-Actor::Actor(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+Actor::Actor(StudentWorld * world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:GraphObject(imageID, startX, startY, startDirection, depth, size)
 {
 	m_world = world;
@@ -13,11 +11,12 @@ Actor::Actor(StudentWorld* world, int imageID, int startX, int startY, int start
 Actor::~Actor()
 {}
 
-bool Actor::canBlock()
+
+bool Actor::canBlock() //Can all pl;ayers block
 {
 	return false;
 }
-bool Actor::doesDamage()
+bool Actor::doesDamage() 
 {
 	return false;
 }
@@ -31,6 +30,10 @@ StudentWorld* Actor::getWorld() const
 	return m_world;
 }
 
+
+
+
+
 /*****Sationary Actors Base Class*****/
 stationaryActors::stationaryActors(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
@@ -43,17 +46,24 @@ bool stationaryActors::canBlock()
 	return true;
 }
 
-/*****Bad Guy Base Class*****/
-badGuy::badGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+
+
+
+/*****Bad Guy Actor Class*****/
+BadGuy::BadGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
 {}
-badGuy::~badGuy()
+BadGuy::~BadGuy()
 {}
 
-bool badGuy::doesDamage()
+bool BadGuy::doesDamage()
 {
 	return true;
 }
+
+
+
+
 
 /*****Block*****/
 Block::Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
@@ -68,6 +78,10 @@ void Block::bonk()
 {
 	getWorld()->playSound(SOUND_PLAYER_BONK);
 }
+
+
+
+
 
 
 /*****Pipes*****/
@@ -85,11 +99,15 @@ void Pipe::bonk()
 }
 
 
+
+
+
+
 /*****Peach*****/
 Peach::Peach(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
 {
-	m_hp = 1;
+	m_hp = 3;
 	remaining_jump_power = 0;
 }
 Peach::~Peach()
@@ -132,33 +150,30 @@ void Peach::decJumpPower()
 
 void Peach::doSomething()
 {
-	if (isAlive() == false)
-	{
-		return;
-	}
 
-	if (getWorld()->overObject(this) == true)
+	//Jumping
+	if (remaining_jump_power > 0)
 	{
-		bonk();
-	}
+		//where does peach want to go?
+		double destinationX = getX();
+		double destinationY = getY() + 4;
 
-	bool directionCheck[4];
-
-	if (getJumpPower() > 0)
-	{
-		if (getWorld()->isBlockedPath(this, directionCheck)[0] == true)
+		//chek if blocked path
+		if (!getWorld()->canMoveThere(this, destinationX, destinationY))
 		{
-			setJumpPower(0);
+			remaining_jump_power = 0;
 		}
 		else
 		{
-			moveTo(getX(), getY() + 4);
+			moveTo(destinationX, destinationY);
 			decJumpPower();
 		}
 	}
+	//if not jumpping falling?
 	else
 	{
-		if (getWorld()->isBlockedPath(this, directionCheck)[1] == false)
+		//check if something is prohibiting peach from falling
+		if (getWorld()->canMoveThere(this, getX(), getY() - 1) && getWorld()->canMoveThere(this, getX(), getY() - 3))
 		{
 			moveTo(getX(), getY() - 4);
 		}
@@ -169,79 +184,49 @@ void Peach::doSomething()
 	int keyPress;
 	if (getWorld()->getKey(keyPress))
 	{
-		
+
 		switch (keyPress)
 		{
-		//west
+			//left
 		case KEY_PRESS_LEFT:
+			//set peaches direction prior to actually moving
 			setDirection(left);
-			if (getWorld()->isBlockedPath(this, directionCheck)[3] == false) //blocked path doesn't allow you to move but can change directions
+			//checking that the destination she wants to move to is a valid one
+			if (getWorld()->canMoveThere(this, getX() - 4, getY()) && getWorld()->canMoveThere(this, getX() - 4, getY() + SPRITE_HEIGHT - 1))
 			{
 				moveTo(getX() - 4, getY());
 			}
 			break;
 
-		//east
+			//right
 		case KEY_PRESS_RIGHT:
+			//set peaches direction prior to actually moving
 			setDirection(right);
-			if (getWorld()->isBlockedPath(this, directionCheck)[2] == false)//blocked path doesn't allow you to move but can change directions
+			//checking that the destination she wants to move to is a valid one
+			if (getWorld()->canMoveThere(this, getX() + 4, getY()) && getWorld()->canMoveThere(this, getX() + 4, getY() + SPRITE_HEIGHT - 1))
 			{
 				moveTo(getX() + 4, getY());
 			}
 			break;
-			
-		//north
+
+			//up
 		case KEY_PRESS_UP:
-			if (getWorld()->isBlockedPath(this, directionCheck)[1] == true)//blocked path doesn't allow you to move but can change directions
+			//check if a block or pipe is currently under peach
+			if (!getWorld()->canMoveThere(this, getX(), getY() - 1))
 			{
-				setJumpPower(8);
+				remaining_jump_power = 8;
 			}
 			getWorld()->playSound(SOUND_PLAYER_JUMP);
 			break;
-		
+
 		}
-	
+
 	}
-return;
+	return;
 }
+
 void Peach::bonk()
 {
 	return;
 }
 
-
-/*****Goomba Class*****/
-Goomba::Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
-	: badGuy(world, imageID, startX, startY, startDirection, depth, size)
-{}
-Goomba::~Goomba()
-{}
-
-void Goomba::doSomething()
-{
-	//std::cout << "hey";
-	bool directionCheck[4];
-
-	//west
-	if (getWorld()->isBlockedPath(this, directionCheck)[3] == true) //blocked path doesn't allow you to move but can change directions
-	{
-		setDirection(0);
-	}
-
-	//east
-	if (getWorld()->isBlockedPath(this, directionCheck)[2] == true)//blocked path doesn't allow you to move but can change directions
-	{
-		setDirection(180);
-	}
-
-	if (getDirection() == 0) //check which way goomba is facing
-	{
-		moveTo(getX() + 1, getY());
-	}
-	else //check which way the goomba is moving
-	{
-		moveTo(getX() - 1, getY());
-	}
-}
-void Goomba::bonk()
-{}
