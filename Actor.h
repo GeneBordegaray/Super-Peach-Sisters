@@ -11,10 +11,10 @@ class Actor : public GraphObject
 {
 public:
 
-    Actor(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-    virtual ~Actor();
+	Actor(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Actor();
 
-    virtual void doSomething() = 0;
+	virtual void doSomething() = 0;
 
 	virtual void bonk() = 0;
 
@@ -42,17 +42,23 @@ private:
 
 };
 
-/*****Bad Guy Base Class*****/
-class badGuy : public Actor
+
+
+/*****Bad Guy Actor Class*****/
+class BadGuy : public Actor
 {
 public:
-	badGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~badGuy();
+	BadGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~BadGuy();
 
 	virtual bool doesDamage();
 
 private:
+
 };
+
+
+
 
 /*****Block*****/
 class Block : public stationaryActors
@@ -104,18 +110,5 @@ private:
 	int remaining_jump_power;
 };
 
-/*****Goomba Class*****/
-class Goomba : public badGuy
-{
-public:
-	Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Goomba();
-
-	virtual void doSomething();
-	virtual void bonk();
-
-private:
-
-};
 
 #endif // ACTOR_H_
