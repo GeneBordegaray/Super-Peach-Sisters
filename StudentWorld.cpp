@@ -340,8 +340,14 @@ bool StudentWorld::bonkOverlappingActor(Actor* bonker) const
     return false;
 }
 
-
+//set peaches hp to whatever it needs to be
 void StudentWorld::setPeachHP(int hp) const
 {
     m_peach->setHP(hp);
+}
+
+//give peach muchroom power
+void StudentWorld::grantJumpPower() const
+{
+    m_peach->setHasMushroom(true);
 }
