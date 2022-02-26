@@ -41,8 +41,6 @@ public:
     //Peach is always the bonker
     bool bonkOverlappingActor(Actor* bonker) const;
 
-    //set peaches hp
-    void setHP() const;
 
 private:
     //my peach character
