@@ -212,8 +212,8 @@ Peach::Peach(StudentWorld* world, int imageID, int startX, int startY, int start
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
 {
 	m_hp = 1;
-	//peach starts with 3 lives
-	setHP(1);
+	//Peach doesn't start wih mushroom
+	setHasMushroom(false);
 	remaining_jump_power = 0;
 	remaining_invincbile = 0;
 }
@@ -277,6 +277,15 @@ bool Peach::isInvincible() const
 	return false;
 }
 
+//Peach when she has a mushroom power up
+void Peach::setHasMushroom(bool mush) 
+{
+	m_hasMushroom = mush;
+}
+bool Peach::getHasMushroom() const
+{
+	return m_hasMushroom;
+}
 
 void Peach::bonk()
 {
@@ -289,6 +298,14 @@ void Peach::bonk()
 	//loses a life
 	decHP();
 
+	//set temporary invincibility
+	setInvincible(10);
+
+	if (getHasMushroom())
+	{
+		setHasMushroom(false);
+	}
+
 
 	//is peach still alive
 	if (getHP() > 0)
@@ -298,12 +315,14 @@ void Peach::bonk()
 	//if peach dies
 	else
 	{
+		getWorld()->playSound(SOUND_PLAYER_DIE);
 		setDead();
 	}
 }
 
 void Peach::doSomethingUnique()
 {
+	std::cout << m_hp;
 	//Is peach currenbtly alive
 	if (!isAlive())
 	{
@@ -406,7 +425,15 @@ void Peach::doSomethingUnique()
 			//check if a block or pipe is currently under peach
 			if (!getWorld()->canMoveThere(this, getX(), getY() - 1))
 			{
-				remaining_jump_power = 8;
+				//does peach currently have a mushroom
+				if (getHasMushroom())
+				{
+					remaining_jump_power = 12;
+				}
+				else
+				{
+					remaining_jump_power = 8;
+				}
 				getWorld()->playSound(SOUND_PLAYER_JUMP);
 			}
 			break;
@@ -505,7 +532,7 @@ void Mushroom::doSomethingUnique()
 		getWorld()->increaseScore(75);
 
 		//tell peach she has jump power
-
+		getWorld()->grantJumpPower();
 
 		//peach cna take one extra hit when she has power ups
 		getWorld()->setPeachHP(2);
