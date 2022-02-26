@@ -60,7 +60,6 @@ public:
 	BadGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~BadGuy();
 
-	virtual bool doesDamage();
 
 private:
 
@@ -113,8 +112,14 @@ public:
 
 	//Peach can jump
 	int getJumpPower();
-	void setJumpPower(int remaining_jump_power);
+	void setJumpPower(int num);
 	void decJumpPower();
+
+	//peach needs to be invincible for some periods of time
+	void setInvincible(int remaining_invincible);
+	int getInvincible();
+	void decInvincible();
+	bool isInvincible() const;
 
 	virtual void bonk();
 
@@ -122,7 +127,22 @@ private:
 	virtual void doSomethingUnique();
 	int m_hp;
 	int remaining_jump_power;
+	int remaining_invincbile;
 };
 
+
+/*****Goomba Class*****/
+class Goomba : public BadGuy
+{
+public:
+	Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Goomba();
+
+	//goombas bonk
+	virtual void bonk();
+
+private:
+	virtual void doSomethingUnique();
+};
 
 #endif // ACTOR_H_
