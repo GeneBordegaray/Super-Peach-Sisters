@@ -145,11 +145,16 @@ public:
 	void decInvincible();
 	bool isInvincible() const;
 
+	//peach with a mushroom power up
+	void setHasMushroom(bool mush);
+	bool getHasMushroom() const;
+
 	virtual void bonk();
 
 private:
 	virtual void doSomethingUnique();
 	int m_hp;
+	bool m_hasMushroom;
 	int remaining_jump_power;
 	int remaining_invincbile;
 };
