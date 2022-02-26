@@ -21,14 +21,16 @@ public:
 
     bool createLevel(int lev);
 
-    bool* isBlockedPath(Actor *player, bool amountTrue[4]);
-    bool overObject(Actor* player);
+    bool overlap(double ax, double ay, double bx, double by) const;
+    bool overlapPeach(Actor* a) const;
+    bool canMoveThere(Actor* player, double ax, double ay) const;
+    bool moveOrBonk(Actor* player, double ax, double ay) const;
 
 private:
     //maintain the list of actors: //blocks
-   Peach* m_peach;
+    Peach* m_peach;
 
-   std:: vector<Actor*> actorList;
+    std::vector<Actor*> actorList;
 };
 
 
