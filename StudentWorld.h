@@ -47,6 +47,9 @@ public:
     //Setting peach hp
     void setPeachHP(int hp) const;
 
+    //give peach jump power
+    void grantJumpPower() const;
+
 private:
     //my peach character
     Peach* m_peach;
