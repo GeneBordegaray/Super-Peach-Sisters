@@ -27,6 +27,11 @@ bool Actor::canBlock() const
 	return false;
 }
 
+int Actor::getGoodieType() const
+{
+	return 0;
+}
+
 void Actor::sufferDamage() 
 {}
 
@@ -89,18 +94,88 @@ BadGuy::~BadGuy()
 
 
 
+/*****Goodie Base Class*****/
+Goodie::Goodie(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Actor(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Goodie::~Goodie()
+{}
+
+
+
+
+
 
 /*****Block*****/
 Block::Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size, GoodieType g)
 	:stationaryActors(world, imageID, startX, startY, startDirection, depth, size)
-{}
+{
+	//does this initialized block currently have a goodie?
+	if (g == none)
+	{
+		m_goodieCount = 0;
+		m_goodieType = 0;
+	}
+	else
+	{
+		//what type of goodie is in this block
+		switch (g)
+		{
+		case(mushroom):
+			m_goodieType = 1;
+			break;
+
+		case(flower):
+			m_goodieType = 2;
+			break;
+
+		case(star):
+			m_goodieType = 3;
+			break;
+
+		default:
+			break;
+		}
+
+		//make sure we know a goodie is in here
+		m_goodieCount = 1;
+	}
+
+
+}
 Block::~Block()
 {}
+
+//returns the type of goodie in the block
+int Block::getGoodieType() const
+{
+	return m_goodieType;
+}
 
 //event when block is bonked
 void Block::bonk()
 {
-	getWorld()->playSound(SOUND_PLAYER_BONK);
+	//if there are no goodies in this block then just simple bonk
+	if (m_goodieCount <= 0)
+	{
+		getWorld()->playSound(SOUND_PLAYER_BONK);
+		return;
+	}
+	//what to do if there currently is a goodie in the block
+	else
+	{
+		getWorld()->playSound(SOUND_POWERUP_APPEARS);
+		//mushroom
+
+		if (m_goodieType == 1)
+		{
+			getWorld()->addGoodie(this);
+		}
+
+
+		//no more goodie in this block
+		m_goodieCount--;
+	}
 }
 
 //blocks dont do much
@@ -403,5 +478,90 @@ void Goomba::doSomethingUnique()
 	else if (getDirection() == right && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX + 4, destinationY - 1))
 	{
 		moveTo(destinationX, destinationY);
+	}
+}
+
+
+
+
+
+/*****Mushroom Class*****/
+Mushroom::Mushroom(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Goodie(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Mushroom::~Mushroom()
+{}
+
+void Mushroom::doSomethingUnique()
+{
+	if (!isAlive())
+	{
+		return;
+	}
+	//is the mushroom overlapping peach
+	if (getWorld()->overlapPeach(this))
+	{
+		//update peach score
+		getWorld()->increaseScore(75);
+
+		//tell peach she has jump power
+
+
+		//peach cna take one extra hit when she has power ups
+		getWorld()->setPeachHP(2);
+
+		//no longer in the game
+		setDead();
+
+		getWorld()->playSound(SOUND_PLAYER_POWERUP);
+
+		return;
+	}
+
+	//should the mushroom be falling
+	if (getWorld()->canMoveThere(this, getX(), getY() - 1))
+	{
+		moveTo(getX(), getY() - 2);
+	}
+
+	//determine which way the mushroom is facing
+	if (getDirection() == left)
+	{
+		//where the mushroom wants to go
+		double destX = getX() - 2;
+		double destY = getY();
+
+		//is this valid spot to move
+		//if not turn around
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			reverseActor();
+			return;
+		}
+		//if so then move there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+	//facing right
+	else
+	{
+		//where the mushroom wants to go
+		double destX = getX() + 2;
+		double destY = getY();
+
+		//is this valid spot to move
+		//if not turn around
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			reverseActor();
+			return;
+		}
+		//if so then move there
+		else
+		{
+			moveTo(destX, destY);
+		}
 	}
 }
