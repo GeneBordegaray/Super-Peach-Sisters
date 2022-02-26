@@ -16,6 +16,7 @@ StudentWorld::StudentWorld(string assetPath)
     : GameWorld(assetPath)
 {
     m_peach = nullptr;
+    m_hp = 3;
 }
 StudentWorld::~StudentWorld()
 {
@@ -40,24 +41,53 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
-    // This code is here merely to allow the game to build, run, and terminate after you hit enter.
-    // Notice that the return value GWSTATUS_PLAYER_DIED will cause our framework to end the current level.
-    if (m_peach->isAlive() == true)
+    //is peach alive
+    if (m_peach->isAlive())
     {
         m_peach->doSomething();
+        //still alive after doing soemthing?
+        if (!m_peach->isAlive())
+        {
+            //decrease how many lives peach has
+            decLives();
+            playSound(SOUND_PLAYER_DIE);
+            return GWSTATUS_PLAYER_DIED;
+        }
     }
     else
     {
+        playSound(SOUND_PLAYER_DIE);
         return GWSTATUS_PLAYER_DIED;
     }
 
+    //telling all actors in vector to do something
     vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++) //telling all actors in vector to do something
+    for (it = actorList.begin(); it != actorList.end(); it++)
     {
-        (*it)->doSomething();
+        //actor has to be alive to do something
+        if ((*it)->isAlive())
+        {
+            (*it)->doSomething();
+            //make sure it didn't kill peach while doing something
+            if (!m_peach->isAlive())
+            {
+                decLives();
+                playSound(SOUND_PLAYER_DIE);
+                return GWSTATUS_PLAYER_DIED;
+            }
+
+        }
     }
 
-    // decLives();
+    //removing all the dead actors
+    for (it = actorList.begin(); it != actorList.end(); it++)
+    {
+        if (!(*it)->isAlive())
+        {
+            delete* it;
+            it = actorList.erase(it);
+        }
+    }
 
     return GWSTATUS_CONTINUE_GAME;
 }
@@ -128,6 +158,11 @@ bool StudentWorld::createLevel(int lev)
                     actorList.push_back(ptr);
                     break;
 
+                case Level::koopa:
+                case Level::goomba:
+                    ptr = new Goomba(this, IID_GOOMBA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 0, 1.0);
+                    actorList.push_back(ptr);
+                    break;
                 }
             }
         return true;
@@ -163,6 +198,19 @@ bool StudentWorld::overlapPeach(Actor* a) const
     return false;
 }
 
+bool StudentWorld::overlapPeach() const
+{
+    vector<Actor*>::const_iterator it;
+    for (it = actorList.begin(); it != actorList.end(); it++)
+    {
+        if (overlapPeach(*it))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool StudentWorld::canMoveThere(Actor* player, double ax, double ay) const
 {
     vector<Actor*>::const_iterator it;
@@ -171,12 +219,13 @@ bool StudentWorld::canMoveThere(Actor* player, double ax, double ay) const
         //get the object that it is pointing to's coords
         double bx = (*it)->getX();
         double by = (*it)->getY();
-
-        //check if it is pointing at the peach
-        if ((*it) == player) 
+        
+        //is it pointing to itself
+        if ((*it) == player)
         {
-            return false;
+            continue;
         }
+
         //does this object block?
         if ((*it)->canBlock())
         {
@@ -203,12 +252,50 @@ bool StudentWorld::moveOrBonk(Actor* player, double ax, double ay) const
         vector<Actor*>::const_iterator it;
         for (it = actorList.begin(); it != actorList.end(); it++)
         {
+            //Get coords that it is pointing to
+            double itX = (*it)->getX();
+            double itY = (*it)->getY();
+
             //is the object overlap with peach
-            if (overlapPeach(*it))
+            if (overlap(ax, ay, itX, itY))
             {
                 (*it)->bonk();
             }
         }
         return false;
     }
+}
+
+bool StudentWorld::bonkOverlappingPeach(Actor* bonker) const
+{
+    //is the bonker and peach touching
+    if (overlapPeach(bonker))
+    {
+        m_peach->bonk();
+        return true;
+    }
+    return false;
+}
+
+bool StudentWorld::bonkOverlappingActor(Actor* bonker) const
+{
+    //get the bonkers coords
+    double bonkerX = bonker->getX();
+    double bonkerY = bonker->getY();
+
+    vector<Actor*>::const_iterator it;
+    for (it = actorList.begin(); it != actorList.end(); it++)
+    {
+        //get its coords
+        double bx = (*it)->getX();
+        double by = (*it)->getY();
+
+        //do they touch
+        if (overlap(bonkerX, bonkerY, bx, by))
+        {
+            (*it)->bonk();
+            return true;
+        }
+    }
+    return false;
 }
