@@ -2,7 +2,6 @@
 #define ACTOR_H_
 
 #include "GraphObject.h"
-
 // Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
 class StudentWorld;
 
@@ -22,6 +21,8 @@ public:
 
 	//is this a character that prevents movement
 	virtual bool canBlock() const;
+
+	virtual int getGoodieType() const;
 
 	//what to do when you are supposed to get damaged
 	virtual void sufferDamage();
@@ -68,19 +69,40 @@ private:
 
 
 
+/*****Goodie Base Class*****/
+class Goodie : public Actor
+{
+public:
+	Goodie(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Goodie();
+
+private:
+
+};
+
+
+
+
 /*****Block*****/
 class Block : public stationaryActors
 {
 public:
+	//blocks can have different goodies in them
 	enum GoodieType {none, flower, mushroom, star};
 
 
 	Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size, GoodieType g);
 	virtual ~Block();
 
+	//what type of goodie is in the block
+	virtual int getGoodieType() const;
+
 	virtual void bonk();
 
 private:
+	int m_goodieCount;
+	//1 is mushroom, 2 is flower, 3 is start, 0 is nothing
+	int m_goodieType;
 	virtual void doSomethingUnique();
 };
 
@@ -146,5 +168,20 @@ public:
 private:
 	virtual void doSomethingUnique();
 };
+
+
+
+/*****Mushroom Class*****/
+class Mushroom : public Goodie
+{
+public:
+	Mushroom(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Mushroom();
+
+private:
+	virtual void doSomethingUnique();
+};
+
+
 
 #endif // ACTOR_H_
