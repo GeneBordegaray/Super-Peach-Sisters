@@ -21,15 +21,35 @@ public:
 
     bool createLevel(int lev);
 
+    //are two actors touching
     bool overlap(double ax, double ay, double bx, double by) const;
+
+    //is an object touching peach
     bool overlapPeach(Actor* a) const;
+    bool overlapPeach() const;
+
+    //can peach move there
     bool canMoveThere(Actor* player, double ax, double ay) const;
+
+    //should actor move there or bonk it
     bool moveOrBonk(Actor* player, double ax, double ay) const;
 
-private:
-    //maintain the list of actors: //blocks
-    Peach* m_peach;
+    //bonk overlapping characters with peach
+    bool bonkOverlappingPeach(Actor* bonker) const;
 
+    //bonk other things
+    //Peach is always the bonker
+    bool bonkOverlappingActor(Actor* bonker) const;
+
+    //set peaches hp
+    void setHP() const;
+
+private:
+    //my peach character
+    Peach* m_peach;
+    int m_hp;
+
+    //keep track of all the actors in the game
     std::vector<Actor*> actorList;
 };
 
