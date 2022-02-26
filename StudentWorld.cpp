@@ -101,9 +101,10 @@ void StudentWorld::cleanUp()
     m_peach = nullptr;
 
     vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++) //deleteing all actors in vector
+    for (it = actorList.begin(); it != actorList.end();) //deleteing all actors in vector
     {
         delete* it;
+        it = actorList.erase(it);
     }
     actorList.clear(); //clearing vector
 
@@ -198,9 +199,13 @@ void StudentWorld::addGoodie(Block* a)
     //what type of goodie
     switch(a->getGoodieType())
     {
-        //mushroom
     case 1:
         goodie = new Mushroom(this, IID_MUSHROOM, blockX, blockY + 8, 0, 1, 1.0);
+        actorList.push_back(goodie);
+        break;
+
+    case 2:
+        goodie = new Flower(this, IID_FLOWER, blockX, blockY + 8, 0, 1, 1.0);
         actorList.push_back(goodie);
         break;
 
