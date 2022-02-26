@@ -14,17 +14,29 @@ public:
 	Actor(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~Actor();
 
-	virtual void doSomething() = 0;
+	//what to do each tick
+	void doSomething();
 
-	virtual void bonk() = 0;
+	//get bonked
+	virtual void bonk();
 
-	virtual bool canBlock();
-	virtual bool doesDamage();
-	virtual bool isAlive();
+	//is this a character that prevents movement
+	virtual bool canBlock() const;
+
+	//what to do when you are supposed to get damaged
+	virtual void sufferDamage();
+
+	//is the character alive
+	bool isAlive() const;
+	void setDead();
+
+	//turn the character around
+	void reverseActor();
 
 	StudentWorld* getWorld() const;
 
 private:
+	virtual void doSomethingUnique() = 0;
 	StudentWorld* m_world;
 	bool m_alive;
 };
@@ -36,10 +48,7 @@ public:
 	stationaryActors(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~stationaryActors();
 
-	virtual bool canBlock();
-
-private:
-
+	virtual bool canBlock() const;
 };
 
 
@@ -68,8 +77,10 @@ public:
 	Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~Block();
 
-	virtual void doSomething();
 	virtual void bonk();
+
+private:
+	virtual void doSomethingUnique();
 };
 
 
@@ -81,8 +92,10 @@ public:
 	Pipe(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~Pipe();
 
-	virtual void doSomething();
 	virtual void bonk();
+
+private:
+	virtual void doSomethingUnique();
 };
 
 /*****Peach Class*****/
@@ -93,19 +106,20 @@ public:
 	Peach(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~Peach();
 
-	virtual bool isAlive();
+	//Peach has health
 	void setHP(int hp);
 	int getHP();
 	void decHP();
 
+	//Peach can jump
 	int getJumpPower();
 	void setJumpPower(int remaining_jump_power);
 	void decJumpPower();
 
-	virtual void doSomething();
 	virtual void bonk();
 
 private:
+	virtual void doSomethingUnique();
 	int m_hp;
 	int remaining_jump_power;
 };
