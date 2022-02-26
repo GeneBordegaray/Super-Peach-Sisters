@@ -85,10 +85,6 @@ BadGuy::BadGuy(StudentWorld* world, int imageID, int startX, int startY, int sta
 BadGuy::~BadGuy()
 {}
 
-bool BadGuy::doesDamage()
-{
-	return true;
-}
 
 
 
@@ -140,10 +136,11 @@ void Pipe::doSomethingUnique()
 Peach::Peach(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
 {
-	m_hp = 3;
+	m_hp = 1;
 	//peach starts with 3 lives
-	setHP(3);
+	setHP(1);
 	remaining_jump_power = 0;
+	remaining_invincbile = 0;
 }
 Peach::~Peach()
 {}
@@ -180,13 +177,86 @@ void Peach::decJumpPower()
 	remaining_jump_power--;
 }
 
+//peach needs to be invincible
+void Peach::setInvincible(int num)
+{
+	remaining_invincbile = num;
+}
+//what is peach's time elft being invincible?
+int Peach::getInvincible()
+{
+	return remaining_invincbile;
+}
+//decrease peaches time being invincible
+void Peach::decInvincible()
+{
+	remaining_invincbile--;
+}
+//chek to see if peach is currently invincible
+bool Peach::isInvincible() const
+{
+	if (remaining_invincbile > 0)
+	{
+		return true;
+	}
+	return false;
+}
+
+
 void Peach::bonk()
 {
-	return;
+	//Is peach currently invincible?
+	if (getInvincible() > 0)
+	{
+		return;
+	}
+
+	//loses a life
+	decHP();
+
+
+	//is peach still alive
+	if (getHP() > 0)
+	{
+		getWorld()->playSound(SOUND_PLAYER_HURT);
+	}
+	//if peach dies
+	else
+	{
+		setDead();
+	}
 }
 
 void Peach::doSomethingUnique()
 {
+	//Is peach currenbtly alive
+	if (!isAlive())
+	{
+		return;
+	}
+
+	//Peach currently invincible
+	if (isInvincible())
+	{
+		decInvincible();
+	}
+	//possibly turn off peach's invincibility 
+	if (getInvincible() <= 0)
+	{
+		setInvincible(0);
+	}
+
+	//bonking
+	//if another actor is overlapped with peach
+	if (getWorld()->overlapPeach())
+	{
+		getWorld()->bonkOverlappingActor(this);
+	}
+	//if peach hit head on bottom of block
+	else if (getJumpPower() > 0 && !getWorld()->canMoveThere(this, getX(), getY() + 1))
+	{
+		getWorld()->moveOrBonk(this, getX(), getY() + 1);
+	}
 
 	//Jumping
 	if (remaining_jump_power > 0)
@@ -229,9 +299,14 @@ void Peach::doSomethingUnique()
 			//set peaches direction prior to actually moving
 			setDirection(left);
 			//checking that the destination she wants to move to is a valid one
-			if (getWorld()->canMoveThere(this, getX() - 4, getY()) && getWorld()->canMoveThere(this, getX() - 4, getY() + SPRITE_HEIGHT - 1))
+			if (getWorld()->canMoveThere(this, getX() - 4, getY()))
 			{
 				moveTo(getX() - 4, getY());
+			}
+			//if we cant move there is a block or a pipe and we want to bonk it, but can't side bonk when jumping
+			else if(getJumpPower() <= 0)
+			{
+				getWorld()->moveOrBonk(this, getX() - 1, getY());
 			}
 			break;
 
@@ -240,9 +315,14 @@ void Peach::doSomethingUnique()
 			//set peaches direction prior to actually moving
 			setDirection(right);
 			//checking that the destination she wants to move to is a valid one
-			if (getWorld()->canMoveThere(this, getX() + 4, getY()) && getWorld()->canMoveThere(this, getX() + 4, getY() + SPRITE_HEIGHT - 1))
+			if (getWorld()->canMoveThere(this, getX() + 4, getY()))
 			{
 				moveTo(getX() + 4, getY());
+			}
+			//if we cant move there is a block or a pipe and we want to bonk it, but can's side bonk when jumping
+			else if (getJumpPower() <= 0)
+			{
+				getWorld()->moveOrBonk(this, getX() + 1, getY());
 			}
 			break;
 
@@ -262,4 +342,66 @@ void Peach::doSomethingUnique()
 
 	}
 	return;
+}
+
+
+
+
+
+/*****Goomba Class*****/
+Goomba::Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:BadGuy(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Goomba::~Goomba()
+{}
+
+
+void Goomba::bonk()
+{
+
+}
+
+void Goomba::doSomethingUnique()
+{
+	//is the goomba alive
+	if (!isAlive())
+	{
+		return;
+	}
+
+	//is goomba currently touching peach
+	if (getWorld()->overlapPeach(this))
+	{
+		//get bonked nerd
+		getWorld()->bonkOverlappingPeach(this);
+		return;
+	}
+
+	//moving
+	//get where teh goomba wants to go
+	double destinationX;
+	if (getDirection() == left)
+	{
+		destinationX = getX() - 1;
+	}
+	else
+	{
+		destinationX = getX() + 1;
+	}
+	double destinationY = getY();
+
+	//can the goomba goes where it wants? if not turn around
+	if (!getWorld()->canMoveThere(this, destinationX, destinationY) || getWorld()->canMoveThere(this, destinationX - 4, destinationY - 1) || getWorld()->canMoveThere(this, destinationX + 4, destinationY - 1))
+	{
+		reverseActor();
+	}
+	//check if the path is blocked or empty the way the goomba is going 
+	if (getDirection() == left && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX-4, destinationY-1))
+	{
+		moveTo(destinationX, destinationY);
+	}
+	else if (getDirection() == right && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX + 4, destinationY - 1))
+	{
+		moveTo(destinationX, destinationY);
+	}
 }
