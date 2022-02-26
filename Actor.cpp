@@ -165,13 +165,9 @@ void Block::bonk()
 	else
 	{
 		getWorld()->playSound(SOUND_POWERUP_APPEARS);
-		//mushroom
 
-		if (m_goodieType == 1)
-		{
-			getWorld()->addGoodie(this);
-		}
-
+		//Add the goodie to the world
+		getWorld()->addGoodie(this);
 
 		//no more goodie in this block
 		m_goodieCount--;
@@ -590,5 +586,23 @@ void Mushroom::doSomethingUnique()
 		{
 			moveTo(destX, destY);
 		}
+	}
+}
+
+
+
+
+/*****Star Class*****/
+Flower::Flower(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Goodie(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Flower::~Flower()
+{}
+
+void Flower::doSomethingUnique()
+{
+	if (!isAlive())
+	{
+		return;
 	}
 }
