@@ -91,7 +91,7 @@ BadGuy::~BadGuy()
 
 
 /*****Block*****/
-Block::Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+Block::Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size, GoodieType g)
 	:stationaryActors(world, imageID, startX, startY, startDirection, depth, size)
 {}
 Block::~Block()
