@@ -72,8 +72,10 @@ private:
 class Block : public stationaryActors
 {
 public:
+	enum GoodieType {none, flower, mushroom, star};
 
-	Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+
+	Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size, GoodieType g);
 	virtual ~Block();
 
 	virtual void bonk();
