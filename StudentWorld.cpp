@@ -1,6 +1,7 @@
 #include "StudentWorld.h"
 #include "GameConstants.h"
 #include <string>
+#include <cmath>
 #include <sstream>
 #include <iomanip>
 using namespace std;
@@ -68,24 +69,26 @@ int StudentWorld::move()
         if ((*it)->isAlive())
         {
             (*it)->doSomething();
-            //make sure it didn't kill peach while doing something
             if (!m_peach->isAlive())
             {
                 decLives();
-                playSound(SOUND_PLAYER_DIE);
                 return GWSTATUS_PLAYER_DIED;
             }
-
         }
     }
 
     //removing all the dead actors
-    for (it = actorList.begin(); it != actorList.end(); it++)
+    for (it = actorList.begin(); it != actorList.end();)
     {
         if (!(*it)->isAlive())
         {
             delete* it;
             it = actorList.erase(it);
+        }
+        //if alive then continue through the vector
+        else
+        {
+            it++;
         }
     }
 
@@ -103,6 +106,7 @@ void StudentWorld::cleanUp()
         delete* it;
     }
     actorList.clear(); //clearing vector
+
 }
 
 bool StudentWorld::createLevel(int lev)
@@ -182,6 +186,30 @@ bool StudentWorld::createLevel(int lev)
     return false;
 }
 
+
+void StudentWorld::addGoodie(Block* a)
+{
+    Actor* goodie;
+    
+    //get the blocks coords
+    int blockX = int(a->getX());
+    int blockY = int(a->getY());
+
+    //what type of goodie
+    switch(a->getGoodieType())
+    {
+        //mushroom
+    case 1:
+        goodie = new Mushroom(this, IID_MUSHROOM, blockX, blockY + 8, 0, 1, 1.0);
+        actorList.push_back(goodie);
+        break;
+
+    default:
+        break;
+    }
+
+    return;
+}
 
 bool StudentWorld::overlap(double ax, double ay, double bx, double by) const
 {
@@ -310,4 +338,10 @@ bool StudentWorld::bonkOverlappingActor(Actor* bonker) const
         }
     }
     return false;
+}
+
+
+void StudentWorld::setPeachHP(int hp) const
+{
+    m_peach->setHP(hp);
 }
