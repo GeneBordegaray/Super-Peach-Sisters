@@ -11,18 +11,46 @@ Actor::Actor(StudentWorld * world, int imageID, int startX, int startY, int star
 Actor::~Actor()
 {}
 
+void Actor::doSomething()
+{
+	if (m_alive)
+	{
+		doSomethingUnique();
+	}
+}
 
-bool Actor::canBlock() //Can all pl;ayers block
+void Actor::bonk()
+{}
+
+bool Actor::canBlock() const 
 {
 	return false;
 }
-bool Actor::doesDamage() 
-{
-	return false;
-}
-bool Actor::isAlive()
+
+void Actor::sufferDamage() 
+{}
+
+bool Actor::isAlive() const
 {
 	return m_alive;
+}
+
+void Actor::setDead()
+{
+	m_alive = false;
+}
+
+void Actor::reverseActor()
+{
+	int curDirec = getDirection();
+	if (curDirec == left)
+	{
+		setDirection(right);
+	}
+	else
+	{
+		setDirection(left);
+	}
 }
 
 StudentWorld* Actor::getWorld() const
@@ -41,7 +69,8 @@ stationaryActors::stationaryActors(StudentWorld* world, int imageID, int startX,
 stationaryActors::~stationaryActors()
 {}
 
-bool stationaryActors::canBlock()
+//All stationary actors can block movement
+bool stationaryActors::canBlock() const
 {
 	return true;
 }
@@ -72,12 +101,15 @@ Block::Block(StudentWorld* world, int imageID, int startX, int startY, int start
 Block::~Block()
 {}
 
-void Block::doSomething()
-{}
+//event when block is bonked
 void Block::bonk()
 {
 	getWorld()->playSound(SOUND_PLAYER_BONK);
 }
+
+//blocks dont do much
+void Block::doSomethingUnique()
+{}
 
 
 
@@ -91,12 +123,13 @@ Pipe::Pipe(StudentWorld* world, int imageID, int startX, int startY, int startDi
 Pipe::~Pipe()
 {}
 
-void Pipe::doSomething()
-{}
+//pipes dont do any thing when bonked
 void Pipe::bonk()
-{
-	return;
-}
+{}
+
+//pipes are lame and don't do things
+void Pipe::doSomethingUnique()
+{}
 
 
 
@@ -108,47 +141,51 @@ Peach::Peach(StudentWorld* world, int imageID, int startX, int startY, int start
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
 {
 	m_hp = 3;
+	//peach starts with 3 lives
+	setHP(3);
 	remaining_jump_power = 0;
 }
 Peach::~Peach()
 {}
 
-bool Peach::isAlive()
-{
-	if (m_hp > 0)
-	{
-		return true;
-	}
-	return false;
-}
+//set peaches hp
 void Peach::setHP(int hp)
 {
 	m_hp = hp;
 }
+//what is peaches current hp
 int Peach::getHP()
 {
 	return m_hp;
 }
+//decrease peaches hp
 void Peach::decHP()
 {
 	m_hp--;
 }
 
-
+//what is peaches current jump power
 int Peach::getJumpPower()
 {
 	return remaining_jump_power;
 }
+//update peaches jump power
 void Peach::setJumpPower(int num)
 {
 	remaining_jump_power = num;
 }
+//decrease peaches jump power
 void Peach::decJumpPower()
 {
 	remaining_jump_power--;
 }
 
-void Peach::doSomething()
+void Peach::bonk()
+{
+	return;
+}
+
+void Peach::doSomethingUnique()
 {
 
 	//Jumping
@@ -215,18 +252,14 @@ void Peach::doSomething()
 			if (!getWorld()->canMoveThere(this, getX(), getY() - 1))
 			{
 				remaining_jump_power = 8;
+				getWorld()->playSound(SOUND_PLAYER_JUMP);
 			}
-			getWorld()->playSound(SOUND_PLAYER_JUMP);
 			break;
 
+		default:
+			break;
 		}
 
 	}
 	return;
 }
-
-void Peach::bonk()
-{
-	return;
-}
-
