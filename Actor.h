@@ -188,5 +188,17 @@ private:
 };
 
 
+/*****Flower Class*****/
+class Flower : public Goodie
+{
+public:
+	Flower(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Flower();
+
+private:
+	virtual void doSomethingUnique();
+
+};
+
 
 #endif // ACTOR_H_
