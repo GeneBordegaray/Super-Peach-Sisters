@@ -136,6 +136,7 @@ bool StudentWorld::createLevel(int lev)
                 mapEntry = curLev.getContentsOf(x, y);
                 //making new actors based off the charaters found in the level.txt file
                 Actor* ptr;
+
                 switch (mapEntry)
                 {
                 case Level::empty:
@@ -146,10 +147,22 @@ bool StudentWorld::createLevel(int lev)
                     break;
 
                 case Level::block:
+                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, Block::none);
+                    actorList.push_back(ptr);
+                    break;
+
                 case Level::flower_goodie_block:
+                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, Block::flower);
+                    actorList.push_back(ptr);
+                    break;
+
                 case Level::mushroom_goodie_block:
+                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, Block::mushroom);
+                    actorList.push_back(ptr);
+                    break;
+
                 case Level::star_goodie_block:
-                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0);
+                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, Block::star);
                     actorList.push_back(ptr);
                     break;
 
@@ -158,7 +171,6 @@ bool StudentWorld::createLevel(int lev)
                     actorList.push_back(ptr);
                     break;
 
-                case Level::koopa:
                 case Level::goomba:
                     ptr = new Goomba(this, IID_GOOMBA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 0, 1.0);
                     actorList.push_back(ptr);
