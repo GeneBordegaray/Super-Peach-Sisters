@@ -21,6 +21,9 @@ public:
 
     bool createLevel(int lev);
 
+    //add an actor to the world
+    void addGoodie(Block* a);
+
     //are two actors touching
     bool overlap(double ax, double ay, double bx, double by) const;
 
@@ -41,6 +44,8 @@ public:
     //Peach is always the bonker
     bool bonkOverlappingActor(Actor* bonker) const;
 
+    //Setting peach hp
+    void setPeachHP(int hp) const;
 
 private:
     //my peach character
