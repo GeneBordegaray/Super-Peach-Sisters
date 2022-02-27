@@ -21,7 +21,11 @@ public:
 
     bool createLevel(int lev);
 
+    //score board and stuff
     void display();
+
+    //if we win the level
+    void endLevel(bool won);
 
     //add actor to the world
     void addActor(Actor* a);
@@ -69,9 +73,7 @@ private:
     //my peach character
     Peach* m_peach;
     int m_hp;
-
-    Shell* curShell;
-
+    bool levelWon;
     //keep track of all the actors in the game
     std::vector<Actor*> actorList;
 };
