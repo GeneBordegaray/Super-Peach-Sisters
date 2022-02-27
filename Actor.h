@@ -69,6 +69,12 @@ public:
 	//some bad guys do similar things
 	virtual void doSomething();
 
+	//bonk
+	virtual void bonk();
+
+	//suffer damage
+	virtual void sufferDamage();
+
 private:
 
 };
@@ -196,11 +202,6 @@ class Goomba : public BadGuy
 public:
 	Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 
-	//What does a goomba do when he is damaged
-	virtual void sufferDamage();
-
-	//goombas bonk
-	virtual void bonk();
 
 private:
 	virtual void doSomethingUnique();
@@ -214,14 +215,8 @@ class Koopa : public BadGuy
 public:
 	Koopa(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 
-	//What does a koopa do when he is damaged
-	virtual void sufferDamage();
-
 	//Make sure we know this is a koopa
 	virtual bool isKoopa() const;
-
-	//What does a koopa do when he is bonked
-	virtual void bonk();
 
 private:
 	virtual void doSomethingUnique();
@@ -239,6 +234,9 @@ public:
 
 	//piranhas arent like other bad guys, they dont move, so they need their own do soemthing
 	virtual void doSomehting();
+
+	//what happpens when a piranha suffers damage
+	virtual void sufferDamage();
 
 	//what does a [iranha do when bonked
 	virtual void bonk();
@@ -316,10 +314,20 @@ private:
 };
 
 /******Level Ender Class*****/
-class LevelEnder : public Actor
+class Flag : public Actor
 {
 public:
-	LevelEnder(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	Flag(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+
+private:
+	virtual void doSomethingUnique();
+};
+
+/*****Mario Ender Class*****/
+class Mario : public Actor
+{
+public:
+	Mario(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 
 private:
 	virtual void doSomethingUnique();
