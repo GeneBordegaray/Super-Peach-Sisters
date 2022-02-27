@@ -304,6 +304,17 @@ private:
 	virtual void doSomethingUnique();
 };
 
+
+/*****Piranha Fireball*****/
+class PiranhaFireball : public Projectile
+{
+public:
+	PiranhaFireball(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+
+private:
+	virtual void doSomethingUnique();
+};
+
 /******Level Ender Class*****/
 class LevelEnder : public Actor
 {
