@@ -100,6 +100,41 @@ BadGuy::BadGuy(StudentWorld* world, int imageID, int startX, int startY, int sta
 BadGuy::~BadGuy()
 {}
 
+void BadGuy::doSomething()
+{
+	if (!isAlive())
+	{
+		return;
+	}
+	doSomethingUnique();
+	//moving
+	//get where teh koopa wants to go
+	double destinationX;
+	if (getDirection() == left)
+	{
+		destinationX = getX() - 1;
+	}
+	else
+	{
+		destinationX = getX() + 1;
+	}
+	double destinationY = getY();
+
+	//can the koopa goes where it wants? if not turn around
+	if (!getWorld()->canMoveThere(this, destinationX, destinationY) || getWorld()->canMoveThere(this, destinationX - 7, destinationY - 1) || getWorld()->canMoveThere(this, destinationX + 7, destinationY - 1))
+	{
+		reverseActor();
+	}
+	//check if the path is blocked or empty the way the koopa is going 
+	if (getDirection() == left && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX, destinationY - 1))
+	{
+		moveTo(destinationX, destinationY);
+	}
+	else if (getDirection() == right && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX, destinationY - 1))
+	{
+		moveTo(destinationX, destinationY);
+	}
+}
 
 
 
@@ -111,7 +146,60 @@ Goodie::Goodie(StudentWorld* world, int imageID, int startX, int startY, int sta
 Goodie::~Goodie()
 {}
 
+void Goodie::doSomething()
+{
+	if (!isAlive())
+	{
+		return;
+	}
+	doSomethingUnique();
+	//should the goodie be falling
+	if (getWorld()->canMoveThere(this, getX(), getY() - 1))
+	{
+		moveTo(getX(), getY() - 2);
+	}
 
+	//determine which way the goodie is facing
+	if (getDirection() == left)
+	{
+		//where the goodie wants to go
+		double destX = getX() - 2;
+		double destY = getY();
+
+		//is this valid spot to move
+		//if not turn around
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			reverseActor();
+			return;
+		}
+		//if so then move there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+	//facing right
+	else
+	{
+		//where the goodie wants to go
+		double destX = getX() + 2;
+		double destY = getY();
+
+		//is this valid spot to move
+		//if not turn around
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			reverseActor();
+			return;
+		}
+		//if so then move there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+}
 
 
 
@@ -616,34 +704,6 @@ void Goomba::doSomethingUnique()
 		getWorld()->bonkOverlappingPeach(this);
 		return;
 	}
-
-	//moving
-	//get where teh goomba wants to go
-	double destinationX;
-	if (getDirection() == left)
-	{
-		destinationX = getX() - 1;
-	}
-	else
-	{
-		destinationX = getX() + 1;
-	}
-	double destinationY = getY();
-
-	//can the goomba goes where it wants? if not turn around
-	if (!getWorld()->canMoveThere(this, destinationX, destinationY) || getWorld()->canMoveThere(this, destinationX - 7, destinationY - 1) || getWorld()->canMoveThere(this, destinationX + 7, destinationY - 1))
-	{
-		reverseActor();
-	}
-	//check if the path is blocked or empty the way the goomba is going 
-	if (getDirection() == left && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX-4, destinationY-1))
-	{
-		moveTo(destinationX, destinationY);
-	}
-	else if (getDirection() == right && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX + 4, destinationY - 1))
-	{
-		moveTo(destinationX, destinationY);
-	}
 }
 
 
@@ -696,34 +756,6 @@ void Koopa::doSomethingUnique()
 		//get bonked nerd
 		getWorld()->bonkOverlappingPeach(this);
 		return;
-	}
-
-	//moving
-	//get where teh koopa wants to go
-	double destinationX;
-	if (getDirection() == left)
-	{
-		destinationX = getX() - 1;
-	}
-	else
-	{
-		destinationX = getX() + 1;
-	}
-	double destinationY = getY();
-
-	//can the koopa goes where it wants? if not turn around
-	if (!getWorld()->canMoveThere(this, destinationX, destinationY) || getWorld()->canMoveThere(this, destinationX - 7, destinationY - 1) || getWorld()->canMoveThere(this, destinationX + 7, destinationY - 1))
-	{
-		reverseActor();
-	}
-	//check if the path is blocked or empty the way the koopa is going 
-	if (getDirection() == left && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX, destinationY - 1))
-	{
-		moveTo(destinationX, destinationY);
-	}
-	else if (getDirection() == right && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX, destinationY - 1))
-	{
-		moveTo(destinationX, destinationY);
 	}
 }
 
@@ -788,53 +820,6 @@ void Mushroom::doSomethingUnique()
 
 		return;
 	}
-
-	//should the mushroom be falling
-	if (getWorld()->canMoveThere(this, getX(), getY() - 1))
-	{
-		moveTo(getX(), getY() - 2);
-	}
-
-	//determine which way the mushroom is facing
-	if (getDirection() == left)
-	{
-		//where the mushroom wants to go
-		double destX = getX() - 2;
-		double destY = getY();
-
-		//is this valid spot to move
-		//if not turn around
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			reverseActor();
-			return;
-		}
-		//if so then move there
-		else
-		{
-			moveTo(destX, destY);
-		}
-	}
-	//facing right
-	else
-	{
-		//where the mushroom wants to go
-		double destX = getX() + 2;
-		double destY = getY();
-
-		//is this valid spot to move
-		//if not turn around
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			reverseActor();
-			return;
-		}
-		//if so then move there
-		else
-		{
-			moveTo(destX, destY);
-		}
-	}
 }
 
 
@@ -872,53 +857,6 @@ void Flower::doSomethingUnique()
 
 		return;
 	}
-
-	//should the mushroom be falling
-	if (getWorld()->canMoveThere(this, getX(), getY() - 1))
-	{
-		moveTo(getX(), getY() - 2);
-	}
-
-	//determine which way the mushroom is facing
-	if (getDirection() == left)
-	{
-		//where the mushroom wants to go
-		double destX = getX() - 2;
-		double destY = getY();
-
-		//is this valid spot to move
-		//if not turn around
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			reverseActor();
-			return;
-		}
-		//if so then move there
-		else
-		{
-			moveTo(destX, destY);
-		}
-	}
-	//facing right
-	else
-	{
-		//where the mushroom wants to go
-		double destX = getX() + 2;
-		double destY = getY();
-
-		//is this valid spot to move
-		//if not turn around
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			reverseActor();
-			return;
-		}
-		//if so then move there
-		else
-		{
-			moveTo(destX, destY);
-		}
-	}
 }
 
 
@@ -951,53 +889,6 @@ void Star::doSomethingUnique()
 		getWorld()->playSound(SOUND_PLAYER_POWERUP);
 
 		return;
-	}
-
-	//should the star be falling
-	if (getWorld()->canMoveThere(this, getX(), getY() - 1))
-	{
-		moveTo(getX(), getY() - 2);
-	}
-
-	//determine which way the star is facing
-	if (getDirection() == left)
-	{
-		//where the star wants to go
-		double destX = getX() - 2;
-		double destY = getY();
-
-		//is this valid spot to move
-		//if not turn around
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			reverseActor();
-			return;
-		}
-		//if so then move there
-		else
-		{
-			moveTo(destX, destY);
-		}
-	}
-	//facing right
-	else
-	{
-		//where the mushroom wants to go
-		double destX = getX() + 2;
-		double destY = getY();
-
-		//is this valid spot to move
-		//if not turn around
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			reverseActor();
-			return;
-		}
-		//if so then move there
-		else
-		{
-			moveTo(destX, destY);
-		}
 	}
 }
 
@@ -1127,5 +1018,39 @@ void Shell::doSomethingUnique()
 		{
 			moveTo(destX, destY);
 		}
+	}
+}
+
+
+
+
+
+/******Level Ender Class*****/
+LevelEnder::LevelEnder(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Actor(world, imageID, startX, startY, startDirection, depth, size)
+{}
+LevelEnder::~LevelEnder()
+{}
+
+void LevelEnder::doSomethingUnique()
+{
+	//make sure it is alive
+	if (!isAlive())
+	{
+		return;
+	}
+
+	//is it overlapping with peach
+	//if so then...
+	if (getWorld()->overlapPeach(this))
+	{
+		//increase the score
+		getWorld()->increaseScore(1000);
+
+		//not alive anymore
+		setDead();
+
+		//let the world know that the level is complete
+		getWorld()->endLevel(true);
 	}
 }
