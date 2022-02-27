@@ -22,6 +22,9 @@ public:
 	//is this a character that prevents movement
 	virtual bool canBlock() const;
 
+	//can this character be damaged
+	virtual bool canTakeDamage() const;
+
 	virtual int getGoodieType() const;
 
 	//what to do when you are supposed to get damaged
@@ -83,15 +86,30 @@ private:
 
 
 
+/*****Projectile Base Class*****/
+class Projectile : public Actor
+{
+public:
+	Projectile(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Projectile();
+
+private:
+
+};
+
+
+
+
 /*****Block*****/
 class Block : public stationaryActors
 {
 public:
 	//blocks can have different goodies in them
-	enum GoodieType {none, flower, mushroom, star};
+	//0 is none, 1 is mushroom, 2 is flower, 3 is star
+	int goodieArr[4] = { 0, 1, 2, 3 };
 
 
-	Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size, GoodieType g);
+	Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size, int goodieType);
 	virtual ~Block();
 
 	//what type of goodie is in the block
@@ -145,9 +163,18 @@ public:
 	void decInvincible();
 	bool isInvincible() const;
 
+	//peach needs to reacharge fire ball shots for some periods of time
+	void setRecharge(int num);
+	int getRecharge();
+	void decRecharge();
+
 	//peach with a mushroom power up
 	void setHasMushroom(bool mush);
 	bool getHasMushroom() const;
+
+	//peach with a flower poewr up
+	void setHasFlower(bool flower);
+	bool getHasFlower() const;
 
 	virtual void bonk();
 
@@ -155,8 +182,10 @@ private:
 	virtual void doSomethingUnique();
 	int m_hp;
 	bool m_hasMushroom;
+	bool m_hasFlower;
 	int remaining_jump_power;
 	int remaining_invincbile;
+	int remaining_recharge;
 };
 
 
@@ -198,6 +227,19 @@ public:
 private:
 	virtual void doSomethingUnique();
 
+};
+
+
+
+/*****Peach FireBall*****/
+class PeachFireball : public Projectile
+{
+public:
+	PeachFireball(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~PeachFireball();
+
+private:
+	virtual void doSomethingUnique();
 };
 
 
