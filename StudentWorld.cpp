@@ -239,13 +239,13 @@ void StudentWorld::display()
 //End level
 void StudentWorld::endLevel(bool won)
 {
-    levelWon = true;
+    levelWon = won;
 }
 
 //end game cause won
 void StudentWorld::endGame(bool won)
 {
-    gameWon = true;
+    gameWon = won;
 }
 
 //Adding new actor
