@@ -59,7 +59,6 @@ public:
 };
 
 
-
 /*****Bad Guy Actor Class*****/
 class BadGuy : public Actor
 {
@@ -72,9 +71,6 @@ public:
 private:
 
 };
-
-
-
 
 /*****Goodie Base Class*****/
 class Goodie : public Actor
@@ -89,9 +85,6 @@ private:
 
 };
 
-
-
-
 /*****Projectile Base Class*****/
 class Projectile : public Actor
 {
@@ -99,12 +92,11 @@ public:
 	Projectile(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~Projectile();
 
+	virtual void doSomething();
+
 private:
 
 };
-
-
-
 
 /*****Block*****/
 class Block : public stationaryActors
@@ -274,7 +266,6 @@ private:
 };
 
 
-
 /*****Star Class*****/
 class Star : public Goodie
 {
@@ -298,8 +289,6 @@ private:
 	virtual void doSomethingUnique();
 };
 
-
-
 /*****Shell Class*****/
 class Shell : public Projectile
 {
@@ -310,8 +299,6 @@ public:
 private:
 	virtual void doSomethingUnique();
 };
-
-
 
 /******Level Ender Class*****/
 class LevelEnder : public Actor
