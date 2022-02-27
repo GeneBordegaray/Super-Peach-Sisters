@@ -18,6 +18,7 @@ StudentWorld::StudentWorld(string assetPath)
 {
     m_peach = nullptr;
     m_hp = 3;
+    levelWon = false;
 }
 StudentWorld::~StudentWorld()
 {
@@ -47,6 +48,12 @@ int StudentWorld::move()
     {
         decLives();
         return GWSTATUS_PLAYER_DIED;
+    }
+    //check if player beat the level
+    if (levelWon)
+    {
+        advanceToNextLevel();
+        return GWSTATUS_FINISHED_LEVEL;
     }
 
     //let peach do something
@@ -170,6 +177,18 @@ bool StudentWorld::createLevel(int lev)
                     ptr = new Koopa(this, IID_KOOPA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 0, 1.0);
                     actorList.push_back(ptr);
                     break;
+
+                    //add pirahna here
+
+                case Level::flag:
+                    ptr = new LevelEnder(this, IID_FLAG, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 1, 1.0);
+                    actorList.push_back(ptr);
+                    break;
+
+                case Level::mario:
+                    ptr = new LevelEnder(this, IID_MARIO, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 1, 1.0);
+                    actorList.push_back(ptr);
+                    break;
                 }
             }
         return true;
@@ -203,6 +222,12 @@ void StudentWorld::display()
     }
 
     setGameStatText(scoreboard.str());
+}
+
+//End level
+void StudentWorld::endLevel(bool won)
+{
+    levelWon = true;
 }
 
 //Adding new actor
