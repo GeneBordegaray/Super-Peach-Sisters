@@ -21,17 +21,11 @@ public:
 
     bool createLevel(int lev);
 
-    //add a mushroom to the world
-    void addMushroom(double ax, double ay);
+    //add actor to the world
+    void addActor(Actor* a);
 
-    //add a flower to the world
-    void addFlower(double ax, double ay);
-
-    //add a peachfire ball to the game
-    void addPeachFireball(double ax, double ay, int PeachDirec);
-
-    //add a koopa shell into the game
-    void addKoopaShell(double ax, double ay, int KoopaDirec);
+    //delete dead actor
+    void deleteActorAddShell();
 
     //are two actors touching
     bool overlap(double ax, double ay, double bx, double by) const;
@@ -69,6 +63,8 @@ private:
     //my peach character
     Peach* m_peach;
     int m_hp;
+
+    Shell* curShell;
 
     //keep track of all the actors in the game
     std::vector<Actor*> actorList;
