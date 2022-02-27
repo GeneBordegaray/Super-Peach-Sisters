@@ -177,6 +177,7 @@ bool StudentWorld::createLevel(int lev)
                     break;
 
                 case Level::goomba:
+                case Level::koopa:
                     ptr = new Goomba(this, IID_GOOMBA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 0, 1.0);
                     actorList.push_back(ptr);
                     break;
