@@ -14,8 +14,8 @@ public:
 	virtual ~Actor();
 
 	//what to do each tick
-	void doSomething();
-
+	virtual void doSomething();
+	virtual void doSomethingUnique() = 0;
 	//get bonked
 	virtual void bonk();
 
@@ -43,7 +43,7 @@ public:
 	StudentWorld* getWorld() const;
 
 private:
-	virtual void doSomethingUnique() = 0;
+	
 	StudentWorld* m_world;
 	bool m_alive;
 };
@@ -67,6 +67,7 @@ public:
 	BadGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~BadGuy();
 
+	virtual void doSomething();
 
 private:
 
@@ -81,6 +82,8 @@ class Goodie : public Actor
 public:
 	Goodie(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~Goodie();
+
+	virtual void doSomething();
 
 private:
 
@@ -303,6 +306,19 @@ class Shell : public Projectile
 public:
 	Shell(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~Shell();
+
+private:
+	virtual void doSomethingUnique();
+};
+
+
+
+/******Level Ender Class*****/
+class LevelEnder : public Actor
+{
+public:
+	LevelEnder(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~LevelEnder();
 
 private:
 	virtual void doSomethingUnique();
