@@ -131,6 +131,53 @@ void BadGuy::doSomething()
 }
 
 
+void BadGuy::bonk()
+{
+	//if not peach dont do anything
+	if (!getWorld()->overlapPeach(this))
+	{
+		return;
+	}
+	//if it is peach
+	else
+	{
+		//check if peach has star power
+		if (getWorld()->getStarPower())
+		{
+			getWorld()->playSound(SOUND_PLAYER_KICK);
+
+			//increase score
+			getWorld()->increaseScore(100);
+
+			//gommab dead
+			setDead();
+
+			//only if koopa
+			if (isKoopa())
+			{
+				getWorld()->deleteActorAddShell();
+			}
+		}
+	}
+}
+
+void BadGuy::sufferDamage()
+{
+	//increase players score
+	getWorld()->increaseScore(100);
+
+	//kill the goomba
+	setDead();
+
+	//only if koopa
+	if (isKoopa())
+	{
+		getWorld()->deleteActorAddShell();
+	}
+}
+
+
+
 /*****Goodie Base Class*****/
 Goodie::Goodie(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
@@ -677,39 +724,6 @@ Goomba::Goomba(StudentWorld* world, int imageID, int startX, int startY, int sta
 	:BadGuy(world, imageID, startX, startY, startDirection, depth, size)
 {}
 
-void Goomba::bonk()
-{
-	//if not peach dont do anything
-	if (!getWorld()->overlapPeach(this))
-	{
-		return;
-	}
-	//if it is peach
-	else
-	{
-		//check if peach has star power
-		if (getWorld()->getStarPower())
-		{
-			getWorld()->playSound(SOUND_PLAYER_KICK);
-
-			//increase score
-			getWorld()->increaseScore(100);
-
-			//gommab dead
-			setDead();
-		}
-	}
-}
-
-void Goomba::sufferDamage()
-{
-	//increase players score
-	getWorld()->increaseScore(100);
-
-	//kill the goomba
-	setDead();
-}
-
 void Goomba::doSomethingUnique()
 {
 	//is the goomba alive
@@ -732,19 +746,6 @@ Koopa::Koopa(StudentWorld* world, int imageID, int startX, int startY, int start
 	:BadGuy(world, imageID, startX, startY, startDirection, depth, size)
 {}
 
-//What does a koopa do when he is dmaaged
-void Koopa::sufferDamage()
-{
-	//Increase score by 100
-	getWorld()->increaseScore(100);
-
-	//koopa is now dead
-	setDead();
-
-	//add a shell into the game while deleteing the koopa so no over lap
-	getWorld()->deleteActorAddShell();
-}
-
 //this is a koopa
 bool Koopa::isKoopa() const
 {
@@ -766,34 +767,6 @@ void Koopa::doSomethingUnique()
 		//get bonked nerd
 		getWorld()->bonkOverlappingPeach(this);
 		return;
-	}
-}
-
-//what does a koopa do when bonked
-void Koopa::bonk()
-{
-	//if not peach dont do anything
-	if (!getWorld()->overlapPeach(this))
-	{
-		return;
-	}
-	//if it is peach
-	else
-	{
-		//check if peach has star power
-		if (getWorld()->getStarPower())
-		{
-			getWorld()->playSound(SOUND_PLAYER_KICK);
-
-			//increase score
-			getWorld()->increaseScore(100);
-
-			//gommab dead
-			setDead();
-
-			//delete teh koopa and add shell
-			getWorld()->deleteActorAddShell();
-		}
 	}
 }
 
@@ -821,10 +794,44 @@ void Piranha::doSomehting()
 	doSomethingUnique();
 }
 
+void Piranha::sufferDamage()
+{
+	//Increase score by 100
+	getWorld()->increaseScore(100);
+
+	//koopa is now dead
+	setDead();
+
+	//add a shell into the game while deleteing the koopa so no over lap
+	getWorld()->deleteActorAddShell();
+}
+
 //get bonked nerd
 void Piranha::bonk()
 {
+	//if not peach dont do anything
+	if (!getWorld()->overlapPeach(this))
+	{
+		return;
+	}
+	//if it is peach
+	else
+	{
+		//check if peach has star power
+		if (getWorld()->getStarPower())
+		{
+			getWorld()->playSound(SOUND_PLAYER_KICK);
 
+			//increase score
+			getWorld()->increaseScore(100);
+
+			//gommab dead
+			setDead();
+
+			//delete teh koopa and add shell
+			getWorld()->deleteActorAddShell();
+		}
+	}
 }
 
 void Piranha::doSomethingUnique()
@@ -1016,12 +1023,12 @@ void PiranhaFireball::doSomethingUnique()
 	}
 }
 
-/******Level Ender Class*****/
-LevelEnder::LevelEnder(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+/*****Flag Ender Class*****/
+Flag::Flag(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
 {}
 
-void LevelEnder::doSomethingUnique()
+void Flag::doSomethingUnique()
 {
 	//make sure it is alive
 	if (!isAlive())
@@ -1039,7 +1046,41 @@ void LevelEnder::doSomethingUnique()
 		//not alive anymore
 		setDead();
 
+		getWorld()->playSound(SOUND_FINISHED_LEVEL);
+
 		//let the world know that the level is complete
 		getWorld()->endLevel(true);
+	}
+}
+
+
+/*****Mario Ender Class*****/
+Mario::Mario(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Actor(world, imageID, startX, startY, startDirection, depth, size)
+{}
+
+void Mario::doSomethingUnique()
+{
+	//make sure it is alive
+	if (!isAlive())
+	{
+		return;
+	}
+
+	//is it overlapping with peach
+	//if so then...
+	if (getWorld()->overlapPeach(this))
+	{
+		//increase the score
+		getWorld()->increaseScore(1000);
+
+		//not alive anymore
+		setDead();
+
+		getWorld()->playSound(SOUND_FINISHED_LEVEL);
+
+		//end game
+		getWorld()->endLevel(true);
+		getWorld()->endGame(true);
 	}
 }
