@@ -30,6 +30,9 @@ public:
     //add a peachfire ball to the game
     void addPeachFireball(double ax, double ay, int PeachDirec);
 
+    //add a koopa shell into the game
+    void addKoopaShell(double ax, double ay, int KoopaDirec);
+
     //are two actors touching
     bool overlap(double ax, double ay, double bx, double by) const;
 
