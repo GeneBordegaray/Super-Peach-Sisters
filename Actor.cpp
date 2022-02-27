@@ -864,9 +864,10 @@ void Piranha::doSomethingUnique()
 		return;
 	}
 	//is peach close enough to shoot
-	if (abs(getWorld()->peachX() - this->getX()) < double(8 * SPRITE_HEIGHT))
+	if (abs(getWorld()->peachX() - int(this->getX())) < 8*SPRITE_HEIGHT)
 	{
 		//do all this stuff
+		getWorld()->addActor(new PiranhaFireball(getWorld(), IID_PIRANHA_FIRE, int(getX()), int(getY()), getDirection(), 1, 1.0));
 		getWorld()->playSound(SOUND_PIRANHA_FIRE);
 		fire_delay = 40;
 		return;
@@ -994,6 +995,22 @@ void Shell::doSomethingUnique()
 	if (getWorld()->damageOverlappingActor(this))
 	{
 		//shell dies after hitting actor
+		setDead();
+		return;
+	}
+}
+
+/*****Piranha Fireball class******/
+PiranhaFireball::PiranhaFireball(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Projectile(world, imageID, startX, startY, startDirection, depth, size)
+{}
+
+void PiranhaFireball::doSomethingUnique()
+{
+	if (getWorld()->overlapPeach(this))
+	{
+		//piranha fireball dies after hitting peach
+		getWorld()->bonkOverlappingPeach(this);
 		setDead();
 		return;
 	}
