@@ -152,22 +152,22 @@ bool StudentWorld::createLevel(int lev)
                     break;
 
                 case Level::block:
-                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, Block::none);
+                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, 0);
                     actorList.push_back(ptr);
                     break;
 
                 case Level::flower_goodie_block:
-                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, Block::flower);
+                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, 2);
                     actorList.push_back(ptr);
                     break;
 
                 case Level::mushroom_goodie_block:
-                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, Block::mushroom);
+                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, 1);
                     actorList.push_back(ptr);
                     break;
 
                 case Level::star_goodie_block:
-                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, Block::star);
+                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, 3);
                     actorList.push_back(ptr);
                     break;
 
@@ -187,33 +187,52 @@ bool StudentWorld::createLevel(int lev)
     return false;
 }
 
-
-void StudentWorld::addGoodie(Block* a)
+//Adding mushroom power up to the world
+void StudentWorld::addMushroom(double ax, double ay)
 {
-    Actor* goodie;
-    
-    //get the blocks coords
-    int blockX = int(a->getX());
-    int blockY = int(a->getY());
+    Actor* ptr;
+    int bx = int(ax);
+    int by = int(ay);
 
-    //what type of goodie
-    switch(a->getGoodieType())
+    ptr = new Mushroom(this, IID_MUSHROOM, bx, by + 8, 0, 1, 1.0);
+    actorList.push_back(ptr);
+}
+
+//Adding flower power up to the world
+void StudentWorld::addFlower(double ax, double ay)
+{
+    Actor* ptr;
+    int bx = int(ax);
+    int by = int(ay);
+
+    ptr = new Flower(this, IID_FLOWER, bx, by + 8, 0, 1, 1.0);
+    actorList.push_back(ptr);
+}
+
+//Adding a peach fireball to the world
+void StudentWorld::addPeachFireball(double ax, double ay, int peachDirec)
+{
+    //which way is peach facing when shooting
+    //left
+    if (peachDirec == 180)
     {
-    case 1:
-        goodie = new Mushroom(this, IID_MUSHROOM, blockX, blockY + 8, 0, 1, 1.0);
-        actorList.push_back(goodie);
-        break;
+        Actor* ptr;
+        int bx = int(ax);
+        int by = int(ay);
 
-    case 2:
-        goodie = new Flower(this, IID_FLOWER, blockX, blockY + 8, 0, 1, 1.0);
-        actorList.push_back(goodie);
-        break;
-
-    default:
-        break;
+        ptr = new PeachFireball(this, IID_PEACH_FIRE, bx, by, 180, 1, 1.0);
+        actorList.push_back(ptr);
     }
+    //right
+    else
+    {
+        Actor* ptr;
+        int bx = int(ax);
+        int by = int(ay);
 
-    return;
+        ptr = new PeachFireball(this, IID_PEACH_FIRE, bx, by, 0, 1, 1.0);
+        actorList.push_back(ptr);
+    }
 }
 
 bool StudentWorld::overlap(double ax, double ay, double bx, double by) const
@@ -345,6 +364,31 @@ bool StudentWorld::bonkOverlappingActor(Actor* bonker) const
     return false;
 }
 
+
+//damage overlapping character
+bool StudentWorld::damageOverlappingActor(Actor* damage) const
+{
+    //get the damagers coords
+    double damageX = damage->getX();
+    double damageY = damage->getY();
+
+    vector<Actor*>::const_iterator it;
+    for (it = actorList.begin(); it != actorList.end(); it++)
+    {
+        //get its coords
+        double bx = (*it)->getX();
+        double by = (*it)->getY();
+
+        //do they touch
+        if (overlap(damageX, damageY, bx, by) && (*it)->canTakeDamage())
+        {
+            (*it)->sufferDamage();
+            return true;
+        }
+    }
+    return false;
+}
+
 //set peaches hp to whatever it needs to be
 void StudentWorld::setPeachHP(int hp) const
 {
@@ -355,4 +399,10 @@ void StudentWorld::setPeachHP(int hp) const
 void StudentWorld::grantJumpPower() const
 {
     m_peach->setHasMushroom(true);
+}
+
+//give peach shooter power
+void StudentWorld::grantShootingPower() const
+{
+    m_peach->setHasFlower(true);
 }
