@@ -19,6 +19,7 @@ StudentWorld::StudentWorld(string assetPath)
     m_peach = nullptr;
     m_hp = 3;
     levelWon = false;
+    gameWon = false;
 
 }
 StudentWorld::~StudentWorld()
@@ -31,7 +32,7 @@ int StudentWorld::init()
 {
     levelWon = false;
 
-    if (getLevel() > 99)
+    if (gameWon)
     {
         return GWSTATUS_PLAYER_WON;
     }
@@ -49,13 +50,17 @@ int StudentWorld::move()
     //is peach alive
     if (!m_peach->isAlive())
     {
-        decLives();
+         decLives();
         return GWSTATUS_PLAYER_DIED;
     }
-    //check if player beat the level
-    if (levelWon)
+    //check if player beat the level but not whole game
+    if (levelWon && !gameWon)
     {
         return GWSTATUS_FINISHED_LEVEL;
+    }
+    else if (levelWon && gameWon)
+    {
+        return GWSTATUS_PLAYER_WON;
     }
 
     //let peach do something
@@ -187,12 +192,12 @@ bool StudentWorld::createLevel(int lev)
                     break;
 
                 case Level::flag:
-                    ptr = new LevelEnder(this, IID_FLAG, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 1, 1.0);
+                    ptr = new Flag(this, IID_FLAG, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 1, 1.0);
                     actorList.push_back(ptr);
                     break;
 
                 case Level::mario:
-                    ptr = new LevelEnder(this, IID_MARIO, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 1, 1.0);
+                    ptr = new Mario(this, IID_MARIO, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 1, 1.0);
                     actorList.push_back(ptr);
                     break;
                 }
@@ -235,6 +240,12 @@ void StudentWorld::display()
 void StudentWorld::endLevel(bool won)
 {
     levelWon = true;
+}
+
+//end game cause won
+void StudentWorld::endGame(bool won)
+{
+    gameWon = true;
 }
 
 //Adding new actor
