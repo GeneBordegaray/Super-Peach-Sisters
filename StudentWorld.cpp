@@ -169,77 +169,38 @@ bool StudentWorld::createLevel(int lev)
     return false;
 }
 
-//Adding mushroom power up to the world
-void StudentWorld::addMushroom(double ax, double ay)
+//Adding new actor
+void StudentWorld::addActor(Actor* a)
 {
-    Actor* ptr;
-    int bx = int(ax);
-    int by = int(ay);
-
-    ptr = new Mushroom(this, IID_MUSHROOM, bx, by + 8, 0, 1, 1.0);
-    actorList.push_back(ptr);
+    actorList.push_back(a);
 }
 
-//Adding flower power up to the world
-void StudentWorld::addFlower(double ax, double ay)
+
+//Delete dead actor
+void StudentWorld::deleteActorAddShell()
 {
-    Actor* ptr;
-    int bx = int(ax);
-    int by = int(ay);
+    vector<Actor*>::iterator it;
+    it = actorList.begin();
 
-    ptr = new Flower(this, IID_FLOWER, bx, by + 8, 0, 1, 1.0);
-    actorList.push_back(ptr);
-}
-
-//Adding a peach fireball to the world
-void StudentWorld::addPeachFireball(double ax, double ay, int peachDirec)
-{
-    //which way is peach facing when shooting
-    //left
-    if (peachDirec == 180)
+    while (it != actorList.end())
     {
-        Actor* ptr;
-        int bx = int(ax);
-        int by = int(ay);
+        //we wanna se if this is a dead koopa because causes infinite loop with shell
+        if (!(*it)->isAlive() && (*it)->isKoopa())
+        {
+            //get the koppas coords and direction
+            double ax = (*it)->getX();
+            double ay = (*it)->getY();
+            int direc = (*it)->getDirection();
 
-        ptr = new PeachFireball(this, IID_PEACH_FIRE, bx, by, 180, 1, 1.0);
-        actorList.push_back(ptr);
-    }
-    //right
-    else
-    {
-        Actor* ptr;
-        int bx = int(ax);
-        int by = int(ay);
+            delete (*it);
+            it = actorList.erase(it);
 
-        ptr = new PeachFireball(this, IID_PEACH_FIRE, bx, by, 0, 1, 1.0);
-        actorList.push_back(ptr);
-    }
-}
-
-//Adding a koopa shell into the game
-void StudentWorld::addKoopaShell(double ax, double ay, int KoopaDirec)
-{
-    //which way is peach facing when shooting
-    //left
-    if (KoopaDirec == 180)
-    {
-        Actor* ptr;
-        int bx = int(ax);
-        int by = int(ay);
-
-        ptr = new Shell(this, IID_SHELL, bx, by, 180, 1, 1.0);
-        //actorList.push_back(ptr);
-    }
-    //right
-    else
-    {
-        Actor* ptr;
-        int bx = int(ax);
-        int by = int(ay);
-
-        ptr = new Shell(this, IID_SHELL, bx, by, 0, 1, 1.0);
-       // actorList.push_back(ptr);
+            addActor(new Shell(this, IID_SHELL, int(ax), int(ay), direc, 1, 1.0));
+        }
+        else
+        {
+            it++;
+        }
     }
 }
 
