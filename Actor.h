@@ -1,454 +1,327 @@
-#include "StudentWorld.h"
-#include "GameConstants.h"
-#include <string>
-#include <cmath>
-#include <sstream>
-#include <iomanip>
-using namespace std;
+#ifndef ACTOR_H_
+#define ACTOR_H_
 
-GameWorld* createStudentWorld(string assetPath)
+#include "GraphObject.h"
+// Students:  Add code to this file, Actor.cpp, StudentWorld.h, and StudentWorld.cpp
+class StudentWorld;
+
+/*****Base Actor*****/
+class Actor : public GraphObject
 {
-    return new StudentWorld(assetPath);
-}
+public:
 
-// Students:  Add code to this file, StudentWorld.h, Actor.h, and Actor.cpp
+	Actor(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Actor();
 
-StudentWorld::StudentWorld(string assetPath)
-    : GameWorld(assetPath)
+	//what to do each tick
+	virtual void doSomething();
+	virtual void doSomethingUnique() = 0;
+	//get bonked
+	virtual void bonk();
+
+	//is this a character that prevents movement
+	virtual bool canBlock() const;
+
+	//can this character be damaged
+	virtual bool canTakeDamage() const;
+
+	virtual int getGoodieType() const;
+
+	//what to do when you are supposed to get damaged
+	virtual void sufferDamage();
+
+	//is the character alive
+	bool isAlive() const;
+	void setDead();
+
+	//is this a koopa
+	virtual bool isKoopa() const;
+
+	//turn the character around
+	void reverseActor();
+
+	StudentWorld* getWorld() const;
+
+private:
+	
+	StudentWorld* m_world;
+	bool m_alive;
+};
+
+/*****Stationary Actor Base Class*****/
+class stationaryActors : public Actor
 {
-    m_peach = nullptr;
-    m_hp = 3;
-    levelWon = false;
-}
-StudentWorld::~StudentWorld()
+public:
+	stationaryActors(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~stationaryActors();
+
+	virtual bool canBlock() const;
+};
+
+
+
+/*****Bad Guy Actor Class*****/
+class BadGuy : public Actor
 {
-    cleanUp();
-}
+public:
+	BadGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~BadGuy();
+
+	virtual void doSomething();
+
+private:
+
+};
 
 
-int StudentWorld::init()
+
+
+/*****Goodie Base Class*****/
+class Goodie : public Actor
 {
-    if (getLevel() > 99)
-    {
-        return GWSTATUS_PLAYER_WON;
-    }
-    if (createLevel(getLevel()) == false)
-    {
-        return GWSTATUS_LEVEL_ERROR;
-    }
+public:
+	Goodie(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Goodie();
 
-    return GWSTATUS_CONTINUE_GAME;
-}
+	virtual void doSomething();
+
+private:
+
+};
 
 
-int StudentWorld::move()
+
+
+/*****Projectile Base Class*****/
+class Projectile : public Actor
 {
-    //is peach alive
-    if (!m_peach->isAlive())
-    {
-        decLives();
-        return GWSTATUS_PLAYER_DIED;
-    }
-    //check if player beat the level
-    if (levelWon)
-    {
-        advanceToNextLevel();
-        return GWSTATUS_FINISHED_LEVEL;
-    }
+public:
+	Projectile(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Projectile();
 
-    //let peach do something
-    m_peach->doSomething();
-    
-    //tell all other actors to do something
-    for (int i = 0; i < actorList.size(); i++)
-    {
-        if (actorList[i]->isAlive())
-        {
-            actorList[i]->doSomething();
-        }
-        else
-        {
-            vector<Actor*>::iterator it;
-            for (it = actorList.begin(); it != actorList.end(); it++)
-            {
-                if ((*it) == actorList[i])
-                {
-                    delete* it;
-                    actorList.erase(it);
-                    break;
-                }
-            }
-        }
-    }
+private:
 
-    //display all the stuff
-    display();
+};
 
-    return GWSTATUS_CONTINUE_GAME;
-}
 
-void StudentWorld::cleanUp()
+
+
+/*****Block*****/
+class Block : public stationaryActors
 {
-    delete m_peach; //delteing main character
-    m_peach = nullptr;
+public:
+	//blocks can have different goodies in them
+	//0 is none, 1 is mushroom, 2 is flower, 3 is star
+	int goodieArr[4] = { 0, 1, 2, 3 };
 
-    vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end();) //deleteing all actors in vector
-    {
-        delete* it;
-        it = actorList.erase(it);
-    }
-    actorList.clear(); //clearing vector
 
-}
+	Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size, int goodieType);
+	virtual ~Block();
 
-bool StudentWorld::createLevel(int lev)
+	//what type of goodie is in the block
+	virtual int getGoodieType() const;
+
+	virtual void bonk();
+
+private:
+	int m_goodieCount;
+	//1 is mushroom, 2 is flower, 3 is start, 0 is nothing
+	int m_goodieType;
+	virtual void doSomethingUnique();
+};
+
+
+/*****Pipes*****/
+class Pipe : public stationaryActors
 {
-    actorList.clear();
+public:
 
-    stringstream str;
-    str << "level" << setfill('0') << setw(2) << lev; //setting proper level number
-    string str2 = str.str();
+	Pipe(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Pipe();
 
-    Level curLev(assetPath());
-    Level::LoadResult result = curLev.loadLevel(str2 + ".txt"); //getting proper level contents
+	virtual void bonk();
 
-    if (result == Level::load_fail_file_not_found)
-    {
-        cerr << "Could not find level01.txt data file" << endl;
-        return false;
-    }
-    else if (result == Level::load_fail_bad_format)
-    {
-        cerr << "level01.txt is improperly formatted" << endl;
-        return false;
-    }
-    else if (result == Level::load_success)
-    {
-        cerr << "Successfully loaded level" << endl;
-        Level::GridEntry mapEntry;
-        for (int x = 0; x < VIEW_WIDTH; x++) //iterating through text file
-            for (int y = 0; y < VIEW_HEIGHT; y++)
-            {
-                mapEntry = curLev.getContentsOf(x, y);
-                //making new actors based off the charaters found in the level.txt file
-                Actor* ptr;
+private:
+	virtual void doSomethingUnique();
+};
 
-                switch (mapEntry)
-                {
-                case Level::empty:
-                    break;
-
-                case Level::peach:
-                    m_peach = new Peach(this, IID_PEACH, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 0, 1.0);
-                    break;
-
-                case Level::block:
-                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, 0);
-                    actorList.push_back(ptr);
-                    break;
-
-                case Level::flower_goodie_block:
-                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, 2);
-                    actorList.push_back(ptr);
-                    break;
-
-                case Level::mushroom_goodie_block:
-                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, 1);
-                    actorList.push_back(ptr);
-                    break;
-
-                case Level::star_goodie_block:
-                    ptr = new Block(this, IID_BLOCK, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0, 3);
-                    actorList.push_back(ptr);
-                    break;
-
-                case Level::pipe:
-                    ptr = new Pipe(this, IID_PIPE, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 2, 1.0);
-                    actorList.push_back(ptr);
-                    break;
-
-                case Level::goomba:
-                    ptr = new Goomba(this, IID_GOOMBA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 0, 1.0);
-                    actorList.push_back(ptr);
-                    break;
-
-                case Level::koopa:
-                    ptr = new Koopa(this, IID_KOOPA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 0, 1.0);
-                    actorList.push_back(ptr);
-                    break;
-
-                    //add pirahna here
-
-                case Level::flag:
-                    ptr = new LevelEnder(this, IID_FLAG, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 1, 1.0);
-                    actorList.push_back(ptr);
-                    break;
-
-                case Level::mario:
-                    ptr = new LevelEnder(this, IID_MARIO, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 1, 1.0);
-                    actorList.push_back(ptr);
-                    break;
-                }
-            }
-        return true;
-    }
-    return false;
-}
-
-void StudentWorld::display()
+/*****Peach Class*****/
+class Peach : public Actor
 {
-    ostringstream scoreboard;
+public:
 
-    scoreboard << "Lives:" << setw(2) << getLives() << " ";
-    
-    scoreboard.fill('0');
-    scoreboard << "Level: " << setw(2) << getLevel() << " ";
+	Peach(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Peach();
 
-    scoreboard.fill('0');
-    scoreboard << "Score: " << setw(6) << getScore() << " ";
+	//Peach has health
+	void setHP(int hp);
+	int getHP();
+	void decHP();
 
-    if (m_peach->getHasMushroom())
-    {
-        scoreboard << "JumpPower! ";
-    }
-    if (m_peach->getHasFlower())
-    {
-        scoreboard << "ShootPower! ";
-    }
-    if (m_peach->getHasStar())
-    {
-        scoreboard << "StarPower! ";
-    }
+	//Peach can jump
+	int getJumpPower();
+	void setJumpPower(int num);
+	void decJumpPower();
 
-    setGameStatText(scoreboard.str());
-}
+	//peach needs to be invincible for some periods of time
+	void setInvincible(int remaining_invincible);
+	int getInvincible();
+	void decInvincible();
+	bool isInvincible() const;
 
-//End level
-void StudentWorld::endLevel(bool won)
+	//peach needs to reacharge fire ball shots for some periods of time
+	void setRecharge(int num);
+	int getRecharge();
+	void decRecharge();
+
+	//peach with a mushroom power up
+	void setHasMushroom(bool mush);
+	bool getHasMushroom() const;
+
+	//peach with a flower poewr up
+	void setHasFlower(bool flower);
+	bool getHasFlower() const;
+
+	//peach with star power up
+	void setHasStar(bool star);
+	bool getHasStar() const;
+	void setTimeStar(int num);
+
+	virtual void bonk();
+
+private:
+	virtual void doSomethingUnique();
+	int m_hp;
+	bool m_hasMushroom;
+	bool m_hasFlower;
+	bool m_hasStar;
+	int remaining_jump_power;
+	int remaining_invincbile;
+	int remaining_recharge;
+	int remaining_star;
+};
+
+
+/*****Goomba Class*****/
+class Goomba : public BadGuy
 {
-    levelWon = true;
-}
+public:
+	Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Goomba();
 
-//Adding new actor
-void StudentWorld::addActor(Actor* a)
+	//Goombas can take damage
+	virtual bool canTakeDamage() const;
+
+	//What does a goomba do when he is damaged
+	virtual void sufferDamage();
+
+	//goombas bonk
+	virtual void bonk();
+
+private:
+	virtual void doSomethingUnique();
+};
+
+
+
+/*****Koopa Class*****/
+class Koopa : public BadGuy
 {
-    actorList.push_back(a);
-}
+public:
+	Koopa(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Koopa();
+
+	//Koopas can take damage
+	virtual bool canTakeDamage() const;
+
+	//What does a koopa do when he is damaged
+	virtual void sufferDamage();
+
+	//Make sure we know this is a koopa
+	virtual bool isKoopa() const;
+
+	//What does a koopa do when he is bonked
+	virtual void bonk();
+
+private:
+	virtual void doSomethingUnique();
+};
 
 
-//Delete dead actor
-void StudentWorld::deleteActorAddShell()
+
+/*****Mushroom Class*****/
+class Mushroom : public Goodie
 {
-    vector<Actor*>::iterator it;
-    it = actorList.begin();
+public:
+	Mushroom(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Mushroom();
 
-    while (it != actorList.end())
-    {
-        //we wanna se if this is a dead koopa because causes infinite loop with shell
-        if (!(*it)->isAlive() && (*it)->isKoopa())
-        {
-            //get the koppas coords and direction
-            double ax = (*it)->getX();
-            double ay = (*it)->getY();
-            int direc = (*it)->getDirection();
+private:
+	virtual void doSomethingUnique();
+};
 
-            delete (*it);
-            it = actorList.erase(it);
 
-            addActor(new Shell(this, IID_SHELL, int(ax), int(ay), direc, 1, 1.0));
-        }
-        else
-        {
-            it++;
-        }
-    }
-}
-
-bool StudentWorld::overlap(double ax, double ay, double bx, double by) const
+/*****Flower Class*****/
+class Flower : public Goodie
 {
-    //checking overlapping between the two actor's coord parameters
-    if (abs(ax - bx) < SPRITE_WIDTH && abs(ay - by) < SPRITE_HEIGHT)
-    {
-        return true;
-    }
-    return false;
-}
+public:
+	Flower(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Flower();
 
-bool StudentWorld::overlapPeach(Actor* a) const
+private:
+	virtual void doSomethingUnique();
+
+};
+
+
+
+/*****Star Class*****/
+class Star : public Goodie
 {
-    //get peaches coords
-    double peachX = m_peach->getX();
-    double peachY = m_peach->getY();
+public:
+	Star(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Star();
 
-    //get parameter object's coords
-    double objectX = a->getX();
-    double objectY = a->getY();
+private:
+	virtual void doSomethingUnique();
+};
 
-    if (overlap(peachX, peachY, objectX, objectY))
-    {
-        return true;
-    }
-    return false;
-}
 
-bool StudentWorld::overlapPeach() const
+/*****Peach FireBall*****/
+class PeachFireball : public Projectile
 {
-    vector<Actor*>::const_iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++)
-    {
-        if (overlapPeach(*it))
-        {
-            return true;
-        }
-    }
-    return false;
-}
+public:
+	PeachFireball(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~PeachFireball();
 
-bool StudentWorld::canMoveThere(Actor* player, double ax, double ay) const
+private:
+	virtual void doSomethingUnique();
+};
+
+
+
+/*****Shell Class*****/
+class Shell : public Projectile
 {
-    vector<Actor*>::const_iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++) 
-    {
-        //get the object that it is pointing to's coords
-        double bx = (*it)->getX();
-        double by = (*it)->getY();
-        
-        //is it pointing to itself
-        if ((*it) == player)
-        {
-            continue;
-        }
+public:
+	Shell(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Shell();
 
-        //does this object block?
-        if ((*it)->canBlock())
-        {
-            if (overlap(ax, ay, bx, by))
-            {
-                return false;
-            }
-        }
-    }
-    return true;
-}
+private:
+	virtual void doSomethingUnique();
+};
 
 
-bool StudentWorld::moveOrBonk(Actor* player, double ax, double ay) const
+
+/******Level Ender Class*****/
+class LevelEnder : public Actor
 {
-    //check if player is moving to valid position
-    if (canMoveThere(player, ax, ay))
-    {
-        player->moveTo(ax, ay);
-        return true;
-    }
-    else
-    {
-        vector<Actor*>::const_iterator it;
-        for (it = actorList.begin(); it != actorList.end(); it++)
-        {
-            //Get coords that it is pointing to
-            double itX = (*it)->getX();
-            double itY = (*it)->getY();
+public:
+	LevelEnder(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~LevelEnder();
 
-            //is the object overlap with peach
-            if (overlap(ax, ay, itX, itY))
-            {
-                (*it)->bonk();
-            }
-        }
-        return false;
-    }
-}
+private:
+	virtual void doSomethingUnique();
+};
 
-bool StudentWorld::bonkOverlappingPeach(Actor* bonker) const
-{
-    //is the bonker and peach touching
-    if (overlapPeach(bonker))
-    {
-        m_peach->bonk();
-        return true;
-    }
-    return false;
-}
-
-bool StudentWorld::bonkOverlappingActor(Actor* bonker) const
-{
-    //get the bonkers coords
-    double bonkerX = bonker->getX();
-    double bonkerY = bonker->getY();
-
-    vector<Actor*>::const_iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++)
-    {
-        //get its coords
-        double bx = (*it)->getX();
-        double by = (*it)->getY();
-
-        //do they touch
-        if (overlap(bonkerX, bonkerY, bx, by))
-        {
-            (*it)->bonk();
-            return true;
-        }
-    }
-    return false;
-}
-
-
-//damage overlapping character
-bool StudentWorld::damageOverlappingActor(Actor* damage) const
-{
-    //get the damagers coords
-    double damageX = damage->getX();
-    double damageY = damage->getY();
-
-    vector<Actor*>::const_iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++)
-    {
-        //get its coords
-        double bx = (*it)->getX();
-        double by = (*it)->getY();
-
-        //do they touch
-        if (overlap(damageX, damageY, bx, by) && (*it)->canTakeDamage())
-        {
-            (*it)->sufferDamage();
-            return true;
-        }
-    }
-    return false;
-}
-
-//set peaches hp to whatever it needs to be
-void StudentWorld::setPeachHP(int hp) const
-{
-    m_peach->setHP(hp);
-}
-
-//give peach muchroom power
-void StudentWorld::grantJumpPower() const
-{
-    m_peach->setHasMushroom(true);
-}
-
-//give peach shooter power
-void StudentWorld::grantShootingPower() const
-{
-    m_peach->setHasFlower(true);
-}
-
-//give peach invincible power
-void StudentWorld::grantInvinciblePower() const
-{
-    m_peach->setInvincible(150);
-    m_peach->setTimeStar(150);
-    m_peach->setHasStar(true);
-}
-bool StudentWorld::getStarPower() const
-{
-    if (m_peach->getHasStar())
-    {
-        return true;
-    }
-    return false;
-}
+#endif // ACTOR_H_
