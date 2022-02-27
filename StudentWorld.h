@@ -27,6 +27,9 @@ public:
     //if we win the level
     void endLevel(bool won);
 
+    //if we win game
+    void endGame(bool won);
+
     //add actor to the world
     void addActor(Actor* a);
 
@@ -78,6 +81,7 @@ private:
     Peach* m_peach;
     int m_hp;
     bool levelWon;
+    bool gameWon;
     //keep track of all the actors in the game
     std::vector<Actor*> actorList;
 };
