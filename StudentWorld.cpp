@@ -19,6 +19,7 @@ StudentWorld::StudentWorld(string assetPath)
     m_peach = nullptr;
     m_hp = 3;
     levelWon = false;
+
 }
 StudentWorld::~StudentWorld()
 {
@@ -28,6 +29,8 @@ StudentWorld::~StudentWorld()
 
 int StudentWorld::init()
 {
+    levelWon = false;
+
     if (getLevel() > 99)
     {
         return GWSTATUS_PLAYER_WON;
@@ -52,7 +55,6 @@ int StudentWorld::move()
     //check if player beat the level
     if (levelWon)
     {
-        advanceToNextLevel();
         return GWSTATUS_FINISHED_LEVEL;
     }
 
@@ -113,14 +115,15 @@ bool StudentWorld::createLevel(int lev)
     Level curLev(assetPath());
     Level::LoadResult result = curLev.loadLevel(str2 + ".txt"); //getting proper level contents
 
+
     if (result == Level::load_fail_file_not_found)
     {
-        cerr << "Could not find level01.txt data file" << endl;
+        cerr << "Could not find " << str2 << " data file" << endl;
         return false;
     }
     else if (result == Level::load_fail_bad_format)
     {
-        cerr << "level01.txt is improperly formatted" << endl;
+        cerr << str2 << " is improperly formatted" << endl;
         return false;
     }
     else if (result == Level::load_success)
@@ -208,6 +211,10 @@ void StudentWorld::display()
     scoreboard.fill('0');
     scoreboard << "Score: " << setw(6) << getScore() << " ";
 
+    if (m_peach->getHasStar())
+    {
+        scoreboard << "StarPower! ";
+    }
     if (m_peach->getHasMushroom())
     {
         scoreboard << "JumpPower! ";
@@ -216,10 +223,7 @@ void StudentWorld::display()
     {
         scoreboard << "ShootPower! ";
     }
-    if (m_peach->getHasStar())
-    {
-        scoreboard << "StarPower! ";
-    }
+  
 
     setGameStatText(scoreboard.str());
 }
