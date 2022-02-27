@@ -334,11 +334,15 @@ void Peach::bonk()
 	//set temporary invincibility
 	setInvincible(10);
 
+	//turn off powers
 	if (getHasMushroom())
 	{
 		setHasMushroom(false);
 	}
-
+	if (getHasFlower())
+	{
+		setHasFlower(false);
+	}
 
 	//is peach still alive
 	if (getHP() > 0)
@@ -575,7 +579,7 @@ void Goomba::doSomethingUnique()
 	double destinationY = getY();
 
 	//can the goomba goes where it wants? if not turn around
-	if (!getWorld()->canMoveThere(this, destinationX, destinationY) || getWorld()->canMoveThere(this, destinationX - 4, destinationY - 1) || getWorld()->canMoveThere(this, destinationX + 4, destinationY - 1))
+	if (!getWorld()->canMoveThere(this, destinationX, destinationY) || getWorld()->canMoveThere(this, destinationX - 7, destinationY - 1) || getWorld()->canMoveThere(this, destinationX + 7, destinationY - 1))
 	{
 		reverseActor();
 	}
@@ -609,9 +613,67 @@ bool Koopa::canTakeDamage() const
 //What does a koopa do when he is dmaaged
 void Koopa::sufferDamage()
 {
+	//Increase score by 100
+	getWorld()->increaseScore(100);
 
+	//koopa is now dead
+	setDead();
+
+	//add a shell into the game
+	getWorld()->addKoopaShell(getX(), getY(), getDirection());
 }
 
+//koopas do stuff
+void Koopa::doSomethingUnique()
+{
+	//make sure the koopa is alive
+	if (!isAlive())
+	{
+		return;
+	}
+
+	//is koopa overlapping peach
+	if (getWorld()->overlapPeach(this))
+	{
+		//get bonked nerd
+		getWorld()->bonkOverlappingPeach(this);
+		return;
+	}
+
+	//moving
+	//get where teh koopa wants to go
+	double destinationX;
+	if (getDirection() == left)
+	{
+		destinationX = getX() - 1;
+	}
+	else
+	{
+		destinationX = getX() + 1;
+	}
+	double destinationY = getY();
+
+	//can the koopa goes where it wants? if not turn around
+	if (!getWorld()->canMoveThere(this, destinationX, destinationY) || getWorld()->canMoveThere(this, destinationX - 7, destinationY - 1) || getWorld()->canMoveThere(this, destinationX + 7, destinationY - 1))
+	{
+		reverseActor();
+	}
+	//check if the path is blocked or empty the way the koopa is going 
+	if (getDirection() == left && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX, destinationY - 1))
+	{
+		moveTo(destinationX, destinationY);
+	}
+	else if (getDirection() == right && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX, destinationY - 1))
+	{
+		moveTo(destinationX, destinationY);
+	}
+}
+
+//what does a koopa do when bonked
+void Koopa::bonk()
+{
+	
+}
 
 
 /*****Mushroom Class*****/
@@ -804,6 +866,78 @@ void PeachFireball::doSomethingUnique()
 	}
 
 	//which way is the fireball facing
+	if (getDirection() == left)
+	{
+		//find where the fireball wants to go
+		double destX = getX() - 2;
+		double destY = getY();
+
+		//is this a valid position
+		//if not then die
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			setDead();
+			return;
+		}
+		//if it is then go there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+	else
+	{
+		//find where the fireball wants to go
+		double destX = getX() + 2;
+		double destY = getY();
+
+		//is this a valid position
+		//if not then die
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			setDead();
+			return;
+		}
+		//if it is then go there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+}
+
+
+
+
+/*****Shell Class *****/
+Shell::Shell(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Projectile(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Shell::~Shell()
+{}
+
+void Shell::doSomethingUnique()
+{
+	//is the shell alive
+	if (!isAlive())
+	{
+		return;
+	}
+
+	//is the shell overlapping a damageable character
+	if (getWorld()->damageOverlappingActor(this))
+	{
+		setDead();
+		return;
+	}
+
+	//should the shell be falling
+	if (getWorld()->canMoveThere(this, getX(), getY() - 2))
+	{
+		moveTo(getX(), getY() - 2);
+	}
+
+	//which way is the shell facing
 	if (getDirection() == left)
 	{
 		//find where the fireball wants to go
