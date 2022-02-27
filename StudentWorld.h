@@ -21,8 +21,14 @@ public:
 
     bool createLevel(int lev);
 
-    //add an actor to the world
-    void addGoodie(Block* a);
+    //add a mushroom to the world
+    void addMushroom(double ax, double ay);
+
+    //add a flower to the world
+    void addFlower(double ax, double ay);
+
+    //add a peachfire ball to the game
+    void addPeachFireball(double ax, double ay, int PeachDirec);
 
     //are two actors touching
     bool overlap(double ax, double ay, double bx, double by) const;
@@ -44,11 +50,17 @@ public:
     //Peach is always the bonker
     bool bonkOverlappingActor(Actor* bonker) const;
 
+    //overlapping with damageable object
+    bool damageOverlappingActor(Actor* damage) const;
+
     //Setting peach hp
     void setPeachHP(int hp) const;
 
     //give peach jump power
     void grantJumpPower() const;
+
+    //give peach flower power
+    void grantShootingPower() const;
 
 private:
     //my peach character
