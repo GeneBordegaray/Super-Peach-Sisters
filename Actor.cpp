@@ -8,8 +8,6 @@ Actor::Actor(StudentWorld * world, int imageID, int startX, int startY, int star
 	m_world = world;
 	m_alive = true;
 }
-Actor::~Actor()
-{}
 
 void Actor::doSomething()
 {
@@ -77,8 +75,6 @@ StudentWorld* Actor::getWorld() const
 stationaryActors::stationaryActors(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
 {}
-stationaryActors::~stationaryActors()
-{}
 
 //All stationary actors can block movement
 bool stationaryActors::canBlock() const
@@ -90,8 +86,12 @@ bool stationaryActors::canBlock() const
 BadGuy::BadGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
 {}
-BadGuy::~BadGuy()
-{}
+
+
+bool BadGuy::canTakeDamage() const
+{
+	return true;
+}
 
 void BadGuy::doSomething()
 {
@@ -134,8 +134,6 @@ void BadGuy::doSomething()
 /*****Goodie Base Class*****/
 Goodie::Goodie(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
-{}
-Goodie::~Goodie()
 {}
 
 void Goodie::doSomething()
@@ -196,8 +194,6 @@ void Goodie::doSomething()
 /*****Projectile Base Class*****/
 Projectile::Projectile(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
-{}
-Projectile::~Projectile()
 {}
 
 void Projectile::doSomething()
@@ -279,8 +275,6 @@ Block::Block(StudentWorld* world, int imageID, int startX, int startY, int start
 
 
 }
-Block::~Block()
-{}
 
 //returns the type of goodie in the block
 int Block::getGoodieType() const
@@ -339,8 +333,6 @@ void Block::doSomethingUnique()
 Pipe::Pipe(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:stationaryActors(world, imageID, startX, startY, startDirection, depth, size)
 {}
-Pipe::~Pipe()
-{}
 
 //pipes dont do any thing when bonked
 void Pipe::bonk()
@@ -366,8 +358,6 @@ Peach::Peach(StudentWorld* world, int imageID, int startX, int startY, int start
 	remaining_recharge = 0;
 	remaining_star = 0;
 }
-Peach::~Peach()
-{}
 
 //set peaches hp
 void Peach::setHP(int hp)
@@ -686,9 +676,6 @@ void Peach::doSomethingUnique()
 Goomba::Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:BadGuy(world, imageID, startX, startY, startDirection, depth, size)
 {}
-Goomba::~Goomba()
-{}
-
 
 void Goomba::bonk()
 {
@@ -712,11 +699,6 @@ void Goomba::bonk()
 			setDead();
 		}
 	}
-}
-
-bool Goomba::canTakeDamage() const
-{
-	return true;
 }
 
 void Goomba::sufferDamage()
@@ -749,14 +731,6 @@ void Goomba::doSomethingUnique()
 Koopa::Koopa(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:BadGuy(world, imageID, startX, startY, startDirection, depth, size)
 {}
-Koopa::~Koopa()
-{}
-
-//Koopas can be damaged
-bool Koopa::canTakeDamage() const
-{
-	return true;
-}
 
 //What does a koopa do when he is dmaaged
 void Koopa::sufferDamage()
@@ -824,11 +798,84 @@ void Koopa::bonk()
 }
 
 
+/*****Piranha Class*****/
+Piranha::Piranha(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Actor(world, imageID, startX, startY, startDirection, depth, size)
+{
+	//starts with no delay
+	fire_delay = 0;
+}
+
+bool Piranha::canTakeDamage() const
+{
+	return true;
+}
+
+//piranha do things differently then other bad guys
+void Piranha::doSomehting()
+{
+	if (!isAlive())
+	{
+		return;
+	}
+	doSomethingUnique();
+}
+
+//get bonked nerd
+void Piranha::bonk()
+{
+
+}
+
+void Piranha::doSomethingUnique()
+{
+	//make sure it is alive still
+	if (!isAlive())
+	{
+		return;
+	}
+	increaseAnimationNumber();
+	//is the piranha touching peach
+	if (getWorld()->overlapPeach(this))
+	{
+		//bonk that nerd
+		getWorld()->bonkOverlappingPeach(this);
+		return;
+	}
+	//are they on the same y
+	if (abs(getWorld()->peachY() - this->getY()) > 1.5 * SPRITE_HEIGHT)
+	{
+		return;
+	}
+	//face the right way
+	if (getWorld()->peachX() > this->getX())
+	{
+		setDirection(right);
+	}
+	else
+	{
+		setDirection(left);
+	}
+	//does the piranha have firing delay
+	if (fire_delay > 0)
+	{
+		//just decrese it and do nothing else
+		fire_delay--;
+		return;
+	}
+	//is peach close enough to shoot
+	if (abs(getWorld()->peachX() - this->getX()) < double(8 * SPRITE_HEIGHT))
+	{
+		//do all this stuff
+		getWorld()->playSound(SOUND_PIRANHA_FIRE);
+		fire_delay = 40;
+		return;
+	}
+}
+
 /*****Mushroom Class*****/
 Mushroom::Mushroom(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Goodie(world, imageID, startX, startY, startDirection, depth, size)
-{}
-Mushroom::~Mushroom()
 {}
 
 void Mushroom::doSomethingUnique()
@@ -865,8 +912,6 @@ void Mushroom::doSomethingUnique()
 Flower::Flower(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Goodie(world, imageID, startX, startY, startDirection, depth, size)
 {}
-Flower::~Flower()
-{}
 
 void Flower::doSomethingUnique()
 {
@@ -899,8 +944,6 @@ void Flower::doSomethingUnique()
 Star::Star(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Goodie(world, imageID, startX, startY, startDirection, depth, size)
 {}
-Star::~Star()
-{}
 
 void Star::doSomethingUnique()
 {
@@ -930,8 +973,6 @@ void Star::doSomethingUnique()
 PeachFireball::PeachFireball(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Projectile(world, imageID, startX, startY, startDirection, depth, size)
 {}
-PeachFireball::~PeachFireball()
-{}
 
 void PeachFireball::doSomethingUnique()
 {
@@ -947,8 +988,6 @@ void PeachFireball::doSomethingUnique()
 Shell::Shell(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Projectile(world, imageID, startX, startY, startDirection, depth, size)
 {}
-Shell::~Shell()
-{}
 
 void Shell::doSomethingUnique()
 {
@@ -963,8 +1002,6 @@ void Shell::doSomethingUnique()
 /******Level Ender Class*****/
 LevelEnder::LevelEnder(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
-{}
-LevelEnder::~LevelEnder()
 {}
 
 void LevelEnder::doSomethingUnique()
