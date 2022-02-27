@@ -42,13 +42,17 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
+    //is peach alive
     if (!m_peach->isAlive())
     {
+        decLives();
         return GWSTATUS_PLAYER_DIED;
     }
 
+    //let peach do something
     m_peach->doSomething();
     
+    //tell all other actors to do something
     for (int i = 0; i < actorList.size(); i++)
     {
         if (actorList[i]->isAlive())
@@ -69,6 +73,10 @@ int StudentWorld::move()
             }
         }
     }
+
+    //display all the stuff
+    display();
+
     return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -167,6 +175,30 @@ bool StudentWorld::createLevel(int lev)
         return true;
     }
     return false;
+}
+
+void StudentWorld::display()
+{
+    ostringstream scoreboard;
+
+    scoreboard << "Lives:" << setw(2) << getLives() << " ";
+    
+    scoreboard.fill('0');
+    scoreboard << "Level: " << setw(2) << getLevel() << " ";
+
+    scoreboard.fill('0');
+    scoreboard << "Score: " << setw(6) << getScore() << " ";
+
+    if (m_peach->getHasMushroom())
+    {
+        scoreboard << "JumpPower! ";
+    }
+    if (m_peach->getHasFlower())
+    {
+        scoreboard << "ShootPower! ";
+    }
+
+    setGameStatText(scoreboard.str());
 }
 
 //Adding new actor
