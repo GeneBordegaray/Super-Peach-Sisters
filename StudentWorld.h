@@ -30,6 +30,10 @@ public:
     //add actor to the world
     void addActor(Actor* a);
 
+    //get peaches x and y
+    int peachX() const;
+    int peachY() const;
+
     //delete dead actor
     void deleteActorAddShell();
 
