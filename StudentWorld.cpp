@@ -181,7 +181,10 @@ bool StudentWorld::createLevel(int lev)
                     actorList.push_back(ptr);
                     break;
 
-                    //add pirahna here
+                case Level::piranha:
+                    ptr = new Piranha(this, IID_PIRANHA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 0, 1.0);
+                    actorList.push_back(ptr);
+                    break;
 
                 case Level::flag:
                     ptr = new LevelEnder(this, IID_FLAG, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, 0, 1, 1.0);
@@ -240,6 +243,15 @@ void StudentWorld::addActor(Actor* a)
     actorList.push_back(a);
 }
 
+
+double StudentWorld::peachX() const
+{
+    return m_peach->getX();
+}
+double StudentWorld::peachY() const
+{
+    return m_peach->getY();
+}
 
 //Delete dead actor
 void StudentWorld::deleteActorAddShell()
