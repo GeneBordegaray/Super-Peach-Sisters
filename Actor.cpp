@@ -930,6 +930,54 @@ void Shell::doSomethingUnique()
 {
 	if (getWorld()->damageOverlappingActor(this))
 	{
+		//shell dies after hitting actor
+		setDead();
+		return;
+	}
 
-}
+	//should the shell be falling
+	if (getWorld()->canMoveThere(this, getX(), getY() - 2))
+	{
+		moveTo(getX(), getY() - 2);
+	}
+
+	//which way is the shell facing
+	if (getDirection() == left)
+	{
+		//find where the shell wants to go
+		double destX = getX() - 2;
+		double destY = getY();
+
+		//is this a valid position
+		//if not then die
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			setDead();
+			return;
+		}
+		//if it is then go there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+	else
+	{
+		//find where the shell wants to go
+		double destX = getX() + 2;
+		double destY = getY();
+
+		//is this a valid position
+		//if not then die
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			setDead();
+			return;
+		}
+		//if it is then go there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
 }
