@@ -27,6 +27,11 @@ bool Actor::canBlock() const
 	return false;
 }
 
+bool Actor::canTakeDamage() const
+{
+	return false;
+}
+
 int Actor::getGoodieType() const
 {
 	return 0;
@@ -105,38 +110,29 @@ Goodie::~Goodie()
 
 
 
+/*****Projectile Base Class*****/
+Projectile::Projectile(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Actor(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Projectile::~Projectile()
+{}
+
+
+
 
 /*****Block*****/
-Block::Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size, GoodieType g)
+Block::Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size, int goodieType)
 	:stationaryActors(world, imageID, startX, startY, startDirection, depth, size)
 {
 	//does this initialized block currently have a goodie?
-	if (g == none)
+	if (goodieType == 0)
 	{
 		m_goodieCount = 0;
 		m_goodieType = 0;
 	}
 	else
 	{
-		//what type of goodie is in this block
-		switch (g)
-		{
-		case(mushroom):
-			m_goodieType = 1;
-			break;
-
-		case(flower):
-			m_goodieType = 2;
-			break;
-
-		case(star):
-			m_goodieType = 3;
-			break;
-
-		default:
-			break;
-		}
-
+		m_goodieType = goodieType;
 		//make sure we know a goodie is in here
 		m_goodieCount = 1;
 	}
@@ -155,6 +151,7 @@ int Block::getGoodieType() const
 //event when block is bonked
 void Block::bonk()
 {
+	std::cout << m_goodieType;
 	//if there are no goodies in this block then just simple bonk
 	if (m_goodieCount <= 0)
 	{
@@ -167,7 +164,19 @@ void Block::bonk()
 		getWorld()->playSound(SOUND_POWERUP_APPEARS);
 
 		//Add the goodie to the world
-		getWorld()->addGoodie(this);
+		switch (m_goodieType)
+		{
+		case 1:
+			getWorld()->addMushroom(getX(), getY());
+			break;
+
+		case 2:
+			getWorld()->addFlower(getX(), getY());
+			break;
+
+		default:
+			break;
+		}
 
 		//no more goodie in this block
 		m_goodieCount--;
@@ -210,8 +219,11 @@ Peach::Peach(StudentWorld* world, int imageID, int startX, int startY, int start
 	m_hp = 1;
 	//Peach doesn't start wih mushroom
 	setHasMushroom(false);
+	//Peach doesn't start with flower
+	setHasFlower(false);
 	remaining_jump_power = 0;
 	remaining_invincbile = 0;
+	remaining_recharge = 0;
 }
 Peach::~Peach()
 {}
@@ -273,6 +285,21 @@ bool Peach::isInvincible() const
 	return false;
 }
 
+//Peach needs to recharge after fireball shots
+void Peach::setRecharge(int num)
+{
+	remaining_recharge = num;
+}
+int Peach::getRecharge()
+{
+	return remaining_recharge;
+}
+void Peach::decRecharge()
+{
+	remaining_recharge--;
+}
+
+
 //Peach when she has a mushroom power up
 void Peach::setHasMushroom(bool mush) 
 {
@@ -281,6 +308,16 @@ void Peach::setHasMushroom(bool mush)
 bool Peach::getHasMushroom() const
 {
 	return m_hasMushroom;
+}
+
+//peach with a flower poewr up
+void Peach::setHasFlower(bool flower)
+{
+	m_hasFlower = flower;
+}
+bool Peach::getHasFlower() const
+{
+	return m_hasFlower;
 }
 
 void Peach::bonk()
@@ -318,7 +355,6 @@ void Peach::bonk()
 
 void Peach::doSomethingUnique()
 {
-	std::cout << m_hp;
 	//Is peach currenbtly alive
 	if (!isAlive())
 	{
@@ -334,6 +370,12 @@ void Peach::doSomethingUnique()
 	if (getInvincible() <= 0)
 	{
 		setInvincible(0);
+	}
+
+	//Recharge
+	if (getRecharge() > 0)
+	{
+		decRecharge();
 	}
 
 	//bonking
@@ -433,6 +475,33 @@ void Peach::doSomethingUnique()
 				getWorld()->playSound(SOUND_PLAYER_JUMP);
 			}
 			break;
+
+		case KEY_PRESS_SPACE:
+			//chekc if peach currently has shooting power
+			if (!getHasFlower())
+			{
+				return;
+			}
+			//what is peach is still recharging from lat shot
+			if (getRecharge() > 0)
+			{
+				return;
+			}
+			//if does have shooting power
+			getWorld()->playSound(SOUND_PLAYER_FIRE);
+			
+			//set the recharge
+			setRecharge(8);
+
+			//which way should fireball go
+			if (getDirection() == left)
+			{
+				getWorld()->addPeachFireball(getX() - 4, getY(), getDirection());
+			}
+			else
+			{
+				getWorld()->addPeachFireball(getX() + 4, getY(), getDirection());
+			}
 
 		default:
 			break;
@@ -604,5 +673,133 @@ void Flower::doSomethingUnique()
 	if (!isAlive())
 	{
 		return;
+	}
+	//is the flower overlapping peach
+	if (getWorld()->overlapPeach(this))
+	{
+		//update peach score
+		getWorld()->increaseScore(50);
+
+		//tell peach she has shooter power
+		getWorld()->grantShootingPower();
+
+		//peach cna take one extra hit when she has power ups
+		getWorld()->setPeachHP(2);
+
+		//no longer in the game
+		setDead();
+
+		getWorld()->playSound(SOUND_PLAYER_POWERUP);
+
+		return;
+	}
+
+	//should the mushroom be falling
+	if (getWorld()->canMoveThere(this, getX(), getY() - 1))
+	{
+		moveTo(getX(), getY() - 2);
+	}
+
+	//determine which way the mushroom is facing
+	if (getDirection() == left)
+	{
+		//where the mushroom wants to go
+		double destX = getX() - 2;
+		double destY = getY();
+
+		//is this valid spot to move
+		//if not turn around
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			reverseActor();
+			return;
+		}
+		//if so then move there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+	//facing right
+	else
+	{
+		//where the mushroom wants to go
+		double destX = getX() + 2;
+		double destY = getY();
+
+		//is this valid spot to move
+		//if not turn around
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			reverseActor();
+			return;
+		}
+		//if so then move there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+}
+
+
+
+/*****Peach Fireball*****/
+PeachFireball::PeachFireball(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Projectile(world, imageID, startX, startY, startDirection, depth, size)
+{}
+PeachFireball::~PeachFireball()
+{}
+
+void PeachFireball::doSomethingUnique()
+{
+	//is the peach fireball touching something that should be damaged
+	if (getWorld()->damageOverlappingActor(this))
+	{
+		setDead();
+		return;
+	}
+
+	//should the fireball be falling
+	if (getWorld()->canMoveThere(this, getX(), getY() - 1))
+	{
+		moveTo(getX(), getY() - 2);
+	}
+
+	//which way is it facing
+	if (getDirection() == left)
+	{
+		//where the mushroom wants to go
+		double destX = getX() - 2;
+		double destY = getY();
+
+		//can the fireball go there
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			setDead();
+			return;
+		}
+		else
+		{
+			moveTo(destX, destY);
+		}
+
+	}
+	else
+	{
+		//where the mushroom wants to go
+		double destX = getX() + 2;
+		double destY = getY();
+
+		//can the fireball go there
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			setDead();
+			return;
+		}
+		else
+		{
+			moveTo(destX, destY);
+		}
 	}
 }
