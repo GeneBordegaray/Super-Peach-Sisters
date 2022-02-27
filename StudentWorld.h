@@ -21,6 +21,8 @@ public:
 
     bool createLevel(int lev);
 
+    void display();
+
     //add actor to the world
     void addActor(Actor* a);
 
@@ -58,6 +60,10 @@ public:
 
     //give peach flower power
     void grantShootingPower() const;
+    
+    //give peach star power
+    void grantInvinciblePower() const;
+    bool getStarPower() const;
 
 private:
     //my peach character
