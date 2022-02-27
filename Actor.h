@@ -271,4 +271,16 @@ private:
 };
 
 
+
+/*****Shell Class*****/
+class Shell : public Projectile
+{
+public:
+	Shell(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Shell();
+
+private:
+	virtual void doSomethingUnique();
+};
+
 #endif // ACTOR_H_
