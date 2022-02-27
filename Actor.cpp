@@ -50,6 +50,11 @@ void Actor::setDead()
 	m_alive = false;
 }
 
+bool Actor::isKoopa() const
+{
+	return false;
+}
+
 void Actor::reverseActor()
 {
 	int curDirec = getDirection();
@@ -151,7 +156,6 @@ int Block::getGoodieType() const
 //event when block is bonked
 void Block::bonk()
 {
-	std::cout << m_goodieType;
 	//if there are no goodies in this block then just simple bonk
 	if (m_goodieCount <= 0)
 	{
@@ -167,11 +171,11 @@ void Block::bonk()
 		switch (m_goodieType)
 		{
 		case 1:
-			getWorld()->addMushroom(getX(), getY());
+			getWorld()->addActor(new Mushroom(getWorld(), IID_MUSHROOM, int(getX()), int(getY() + 8), 0, 1, 1.0));
 			break;
 
 		case 2:
-			getWorld()->addFlower(getX(), getY());
+			getWorld()->addActor(new Flower(getWorld(), IID_FLOWER, int(getX()), int(getY() + 8), 0, 1, 1.0));
 			break;
 
 		default:
@@ -500,11 +504,11 @@ void Peach::doSomethingUnique()
 			//which way should fireball go
 			if (getDirection() == left)
 			{
-				getWorld()->addPeachFireball(getX() - 4, getY(), getDirection());
+				getWorld()->addActor(new PeachFireball(getWorld(), IID_PEACH_FIRE, int(getX() - 4), int(getY()), getDirection(), 1,  1.0));
 			}
 			else
 			{
-				getWorld()->addPeachFireball(getX() + 4, getY(), getDirection());
+				getWorld()->addActor(new PeachFireball(getWorld(), IID_PEACH_FIRE, int(getX() + 4), int(getY()), getDirection(), 1, 1.0));
 			}
 
 		default:
@@ -619,8 +623,14 @@ void Koopa::sufferDamage()
 	//koopa is now dead
 	setDead();
 
-	//add a shell into the game
-	getWorld()->addKoopaShell(getX(), getY(), getDirection());
+	//add a shell into the game while deleteing the koopa so no over lap
+	getWorld()->deleteActorAddShell();
+}
+
+//this is a koopa
+bool Koopa::isKoopa() const
+{
+	return true;
 }
 
 //koopas do stuff
@@ -918,62 +928,8 @@ Shell::~Shell()
 
 void Shell::doSomethingUnique()
 {
-	//is the shell alive
-	if (!isAlive())
-	{
-		return;
-	}
-
-	//is the shell overlapping a damageable character
 	if (getWorld()->damageOverlappingActor(this))
 	{
-		setDead();
-		return;
-	}
 
-	//should the shell be falling
-	if (getWorld()->canMoveThere(this, getX(), getY() - 2))
-	{
-		moveTo(getX(), getY() - 2);
-	}
-
-	//which way is the shell facing
-	if (getDirection() == left)
-	{
-		//find where the fireball wants to go
-		double destX = getX() - 2;
-		double destY = getY();
-
-		//is this a valid position
-		//if not then die
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			setDead();
-			return;
-		}
-		//if it is then go there
-		else
-		{
-			moveTo(destX, destY);
-		}
-	}
-	else
-	{
-		//find where the fireball wants to go
-		double destX = getX() + 2;
-		double destY = getY();
-
-		//is this a valid position
-		//if not then die
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			setDead();
-			return;
-		}
-		//if it is then go there
-		else
-		{
-			moveTo(destX, destY);
-		}
-	}
+}
 }
