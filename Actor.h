@@ -196,7 +196,35 @@ public:
 	Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
 	virtual ~Goomba();
 
+	//Goombas can take damage
+	virtual bool canTakeDamage() const;
+
+	//What does a goomba do when he is damaged
+	virtual void sufferDamage();
+
 	//goombas bonk
+	virtual void bonk();
+
+private:
+	virtual void doSomethingUnique();
+};
+
+
+
+/*****Koopa Class*****/
+class Koopa : public BadGuy
+{
+public:
+	Koopa(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Koopa();
+
+	//Koopas can take damage
+	virtual bool canTakeDamage() const;
+
+	//What does a koopa do when he is damaged
+	virtual void sufferDamage();
+
+	//What does a koopa do when he is bonked
 	virtual void bonk();
 
 private:
