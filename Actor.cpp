@@ -178,6 +178,10 @@ void Block::bonk()
 			getWorld()->addActor(new Flower(getWorld(), IID_FLOWER, int(getX()), int(getY() + 8), 0, 1, 1.0));
 			break;
 
+		case 3:
+			getWorld()->addActor(new Star(getWorld(), IID_STAR, int(getX()), int(getY() + 8), 0, 1, 1.0));
+			break;
+
 		default:
 			break;
 		}
@@ -225,9 +229,12 @@ Peach::Peach(StudentWorld* world, int imageID, int startX, int startY, int start
 	setHasMushroom(false);
 	//Peach doesn't start with flower
 	setHasFlower(false);
+	//peach doesn't start with star
+	setHasStar(false);
 	remaining_jump_power = 0;
 	remaining_invincbile = 0;
 	remaining_recharge = 0;
+	remaining_star = 0;
 }
 Peach::~Peach()
 {}
@@ -324,6 +331,20 @@ bool Peach::getHasFlower() const
 	return m_hasFlower;
 }
 
+//peach with a star
+void Peach::setHasStar(bool star)
+{
+	m_hasStar = star;
+}
+bool Peach::getHasStar() const
+{
+	return m_hasStar;
+}
+void Peach::setTimeStar(int num)
+{
+	remaining_star = num;
+}
+
 void Peach::bonk()
 {
 	//Is peach currently invincible?
@@ -336,7 +357,7 @@ void Peach::bonk()
 	decHP();
 
 	//set temporary invincibility
-	setInvincible(10);
+	setInvincible(remaining_invincbile+10);
 
 	//turn off powers
 	if (getHasMushroom())
@@ -367,6 +388,17 @@ void Peach::doSomethingUnique()
 	if (!isAlive())
 	{
 		return;
+	}
+
+	//if star power time is up no more star power
+	if (remaining_star <= 0)
+	{
+		setHasStar(false);
+	}
+	//if has star power decrease time left
+	if (getHasStar())
+	{
+		remaining_star--;
 	}
 
 	//Peach currently invincible
@@ -533,9 +565,25 @@ Goomba::~Goomba()
 
 void Goomba::bonk()
 {
+	//if not peach dont do anything
 	if (!getWorld()->overlapPeach(this))
 	{
 		return;
+	}
+	//if it is peach
+	else
+	{
+		//check if peach has star power
+		if (getWorld()->getStarPower())
+		{
+			getWorld()->playSound(SOUND_PLAYER_KICK);
+
+			//increase score
+			getWorld()->increaseScore(100);
+
+			//gommab dead
+			setDead();
+		}
 	}
 }
 
@@ -682,7 +730,29 @@ void Koopa::doSomethingUnique()
 //what does a koopa do when bonked
 void Koopa::bonk()
 {
-	
+	//if not peach dont do anything
+	if (!getWorld()->overlapPeach(this))
+	{
+		return;
+	}
+	//if it is peach
+	else
+	{
+		//check if peach has star power
+		if (getWorld()->getStarPower())
+		{
+			getWorld()->playSound(SOUND_PLAYER_KICK);
+
+			//increase score
+			getWorld()->increaseScore(100);
+
+			//gommab dead
+			setDead();
+
+			//delete teh koopa and add shell
+			getWorld()->deleteActorAddShell();
+		}
+	}
 }
 
 
@@ -770,7 +840,7 @@ void Mushroom::doSomethingUnique()
 
 
 
-/*****Star Class*****/
+/*****Flower Class*****/
 Flower::Flower(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Goodie(world, imageID, startX, startY, startDirection, depth, size)
 {}
@@ -852,6 +922,84 @@ void Flower::doSomethingUnique()
 }
 
 
+
+/*****Star Goodie*****/
+Star::Star(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:Goodie(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Star::~Star()
+{}
+
+void Star::doSomethingUnique()
+{
+	if (!isAlive())
+	{
+		return;
+	}
+	//is the star overlapping peach
+	if (getWorld()->overlapPeach(this))
+	{
+		//update peach score
+		getWorld()->increaseScore(100);
+
+		//tell peach she has invincibility power
+		getWorld()->grantInvinciblePower();
+
+		//no longer in the game
+		setDead();
+
+		getWorld()->playSound(SOUND_PLAYER_POWERUP);
+
+		return;
+	}
+
+	//should the star be falling
+	if (getWorld()->canMoveThere(this, getX(), getY() - 1))
+	{
+		moveTo(getX(), getY() - 2);
+	}
+
+	//determine which way the star is facing
+	if (getDirection() == left)
+	{
+		//where the star wants to go
+		double destX = getX() - 2;
+		double destY = getY();
+
+		//is this valid spot to move
+		//if not turn around
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			reverseActor();
+			return;
+		}
+		//if so then move there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+	//facing right
+	else
+	{
+		//where the mushroom wants to go
+		double destX = getX() + 2;
+		double destY = getY();
+
+		//is this valid spot to move
+		//if not turn around
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			reverseActor();
+			return;
+		}
+		//if so then move there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+}
 
 /*****Peach Fireball*****/
 PeachFireball::PeachFireball(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
