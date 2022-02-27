@@ -525,7 +525,24 @@ Goomba::~Goomba()
 
 void Goomba::bonk()
 {
+	if (!getWorld()->overlapPeach(this))
+	{
+		return;
+	}
+}
 
+bool Goomba::canTakeDamage() const
+{
+	return true;
+}
+
+void Goomba::sufferDamage()
+{
+	//increase players score
+	getWorld()->increaseScore(100);
+
+	//kill the goomba
+	setDead();
 }
 
 void Goomba::doSomethingUnique()
@@ -574,6 +591,26 @@ void Goomba::doSomethingUnique()
 }
 
 
+
+
+/*****Koopa Class*****/
+Koopa::Koopa(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+	:BadGuy(world, imageID, startX, startY, startDirection, depth, size)
+{}
+Koopa::~Koopa()
+{}
+
+//Koopas can be damaged
+bool Koopa::canTakeDamage() const
+{
+	return true;
+}
+
+//What does a koopa do when he is dmaaged
+void Koopa::sufferDamage()
+{
+
+}
 
 
 
@@ -761,42 +798,45 @@ void PeachFireball::doSomethingUnique()
 	}
 
 	//should the fireball be falling
-	if (getWorld()->canMoveThere(this, getX(), getY() - 1))
+	if (getWorld()->canMoveThere(this, getX(), getY() - 2))
 	{
 		moveTo(getX(), getY() - 2);
 	}
 
-	//which way is it facing
+	//which way is the fireball facing
 	if (getDirection() == left)
 	{
-		//where the mushroom wants to go
+		//find where the fireball wants to go
 		double destX = getX() - 2;
 		double destY = getY();
 
-		//can the fireball go there
+		//is this a valid position
+		//if not then die
 		if (!getWorld()->canMoveThere(this, destX, destY))
 		{
 			setDead();
 			return;
 		}
+		//if it is then go there
 		else
 		{
 			moveTo(destX, destY);
 		}
-
 	}
 	else
 	{
-		//where the mushroom wants to go
+		//find where the fireball wants to go
 		double destX = getX() + 2;
 		double destY = getY();
 
-		//can the fireball go there
+		//is this a valid position
+		//if not then die
 		if (!getWorld()->canMoveThere(this, destX, destY))
 		{
 			setDead();
 			return;
 		}
+		//if it is then go there
 		else
 		{
 			moveTo(destX, destY);
