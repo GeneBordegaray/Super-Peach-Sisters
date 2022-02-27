@@ -11,7 +11,6 @@ class Actor : public GraphObject
 public:
 
 	Actor(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Actor();
 
 	//what to do each tick
 	virtual void doSomething();
@@ -53,7 +52,6 @@ class stationaryActors : public Actor
 {
 public:
 	stationaryActors(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~stationaryActors();
 
 	virtual bool canBlock() const;
 };
@@ -64,8 +62,11 @@ class BadGuy : public Actor
 {
 public:
 	BadGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~BadGuy();
 
+	//all bad guys can take damage
+	virtual bool canTakeDamage() const;
+
+	//some bad guys do similar things
 	virtual void doSomething();
 
 private:
@@ -77,7 +78,6 @@ class Goodie : public Actor
 {
 public:
 	Goodie(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Goodie();
 
 	virtual void doSomething();
 
@@ -90,7 +90,6 @@ class Projectile : public Actor
 {
 public:
 	Projectile(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Projectile();
 
 	virtual void doSomething();
 
@@ -108,7 +107,6 @@ public:
 
 
 	Block(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size, int goodieType);
-	virtual ~Block();
 
 	//what type of goodie is in the block
 	virtual int getGoodieType() const;
@@ -129,7 +127,6 @@ class Pipe : public stationaryActors
 public:
 
 	Pipe(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Pipe();
 
 	virtual void bonk();
 
@@ -143,7 +140,6 @@ class Peach : public Actor
 public:
 
 	Peach(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Peach();
 
 	//Peach has health
 	void setHP(int hp);
@@ -199,10 +195,6 @@ class Goomba : public BadGuy
 {
 public:
 	Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Goomba();
-
-	//Goombas can take damage
-	virtual bool canTakeDamage() const;
 
 	//What does a goomba do when he is damaged
 	virtual void sufferDamage();
@@ -221,10 +213,6 @@ class Koopa : public BadGuy
 {
 public:
 	Koopa(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Koopa();
-
-	//Koopas can take damage
-	virtual bool canTakeDamage() const;
 
 	//What does a koopa do when he is damaged
 	virtual void sufferDamage();
@@ -240,13 +228,33 @@ private:
 };
 
 
+/*****Piranha Class*****/
+class Piranha : public Actor
+{
+public:
+	Piranha(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+
+	//piranha can take damage
+	virtual bool canTakeDamage() const;
+
+	//piranhas arent like other bad guys, they dont move, so they need their own do soemthing
+	virtual void doSomehting();
+
+	//what does a [iranha do when bonked
+	virtual void bonk();
+
+private:
+	virtual void doSomethingUnique();
+
+	int fire_delay;
+};
+
 
 /*****Mushroom Class*****/
 class Mushroom : public Goodie
 {
 public:
 	Mushroom(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Mushroom();
 
 private:
 	virtual void doSomethingUnique();
@@ -258,7 +266,6 @@ class Flower : public Goodie
 {
 public:
 	Flower(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Flower();
 
 private:
 	virtual void doSomethingUnique();
@@ -271,7 +278,6 @@ class Star : public Goodie
 {
 public:
 	Star(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Star();
 
 private:
 	virtual void doSomethingUnique();
@@ -283,7 +289,6 @@ class PeachFireball : public Projectile
 {
 public:
 	PeachFireball(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~PeachFireball();
 
 private:
 	virtual void doSomethingUnique();
@@ -294,7 +299,6 @@ class Shell : public Projectile
 {
 public:
 	Shell(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~Shell();
 
 private:
 	virtual void doSomethingUnique();
@@ -305,7 +309,6 @@ class LevelEnder : public Actor
 {
 public:
 	LevelEnder(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
-	virtual ~LevelEnder();
 
 private:
 	virtual void doSomethingUnique();
