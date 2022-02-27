@@ -179,6 +179,11 @@ public:
 	void setHasFlower(bool flower);
 	bool getHasFlower() const;
 
+	//peach with star power up
+	void setHasStar(bool star);
+	bool getHasStar() const;
+	void setTimeStar(int num);
+
 	virtual void bonk();
 
 private:
@@ -186,9 +191,11 @@ private:
 	int m_hp;
 	bool m_hasMushroom;
 	bool m_hasFlower;
+	bool m_hasStar;
 	int remaining_jump_power;
 	int remaining_invincbile;
 	int remaining_recharge;
+	int remaining_star;
 };
 
 
@@ -263,6 +270,18 @@ private:
 
 };
 
+
+
+/*****Star Class*****/
+class Star : public Goodie
+{
+public:
+	Star(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size);
+	virtual ~Star();
+
+private:
+	virtual void doSomethingUnique();
+};
 
 
 /*****Peach FireBall*****/
