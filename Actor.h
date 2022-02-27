@@ -34,6 +34,9 @@ public:
 	bool isAlive() const;
 	void setDead();
 
+	//is this a koopa
+	virtual bool isKoopa() const;
+
 	//turn the character around
 	void reverseActor();
 
@@ -223,6 +226,9 @@ public:
 
 	//What does a koopa do when he is damaged
 	virtual void sufferDamage();
+
+	//Make sure we know this is a koopa
+	virtual bool isKoopa() const;
 
 	//What does a koopa do when he is bonked
 	virtual void bonk();
