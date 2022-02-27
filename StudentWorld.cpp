@@ -42,56 +42,33 @@ int StudentWorld::init()
 
 int StudentWorld::move()
 {
-    //is peach alive
-    if (m_peach->isAlive())
+    if (!m_peach->isAlive())
     {
-        m_peach->doSomething();
-        //still alive after doing soemthing?
-        if (!m_peach->isAlive())
-        {
-            //decrease how many lives peach has
-            decLives();
-            playSound(SOUND_PLAYER_DIE);
-            return GWSTATUS_PLAYER_DIED;
-        }
-    }
-    else
-    {
-        playSound(SOUND_PLAYER_DIE);
         return GWSTATUS_PLAYER_DIED;
     }
 
-    //telling all actors in vector to do something
-    vector<Actor*>::iterator it;
-    for (it = actorList.begin(); it != actorList.end(); it++)
+    m_peach->doSomething();
+    
+    for (int i = 0; i < actorList.size(); i++)
     {
-        //actor has to be alive to do something
-        if ((*it)->isAlive())
+        if (actorList[i]->isAlive())
         {
-            (*it)->doSomething();
-            if (!m_peach->isAlive())
+            actorList[i]->doSomething();
+        }
+        else
+        {
+            vector<Actor*>::iterator it;
+            for (it = actorList.begin(); it != actorList.end(); it++)
             {
-                decLives();
-                return GWSTATUS_PLAYER_DIED;
+                if ((*it) == actorList[i])
+                {
+                    delete* it;
+                    actorList.erase(it);
+                    break;
+                }
             }
         }
     }
-
-    //removing all the dead actors
-    for (it = actorList.begin(); it != actorList.end();)
-    {
-        if (!(*it)->isAlive())
-        {
-            delete* it;
-            it = actorList.erase(it);
-        }
-        //if alive then continue through the vector
-        else
-        {
-            it++;
-        }
-    }
-
     return GWSTATUS_CONTINUE_GAME;
 }
 
@@ -177,8 +154,12 @@ bool StudentWorld::createLevel(int lev)
                     break;
 
                 case Level::goomba:
-                case Level::koopa:
                     ptr = new Goomba(this, IID_GOOMBA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 0, 1.0);
+                    actorList.push_back(ptr);
+                    break;
+
+                case Level::koopa:
+                    ptr = new Koopa(this, IID_KOOPA, SPRITE_WIDTH * x, SPRITE_HEIGHT * y, (rand() > RAND_MAX / 2) ? 0 : 180, 0, 1.0);
                     actorList.push_back(ptr);
                     break;
                 }
@@ -233,6 +214,32 @@ void StudentWorld::addPeachFireball(double ax, double ay, int peachDirec)
 
         ptr = new PeachFireball(this, IID_PEACH_FIRE, bx, by, 0, 1, 1.0);
         actorList.push_back(ptr);
+    }
+}
+
+//Adding a koopa shell into the game
+void StudentWorld::addKoopaShell(double ax, double ay, int KoopaDirec)
+{
+    //which way is peach facing when shooting
+    //left
+    if (KoopaDirec == 180)
+    {
+        Actor* ptr;
+        int bx = int(ax);
+        int by = int(ay);
+
+        ptr = new Shell(this, IID_SHELL, bx, by, 180, 1, 1.0);
+        //actorList.push_back(ptr);
+    }
+    //right
+    else
+    {
+        Actor* ptr;
+        int bx = int(ax);
+        int by = int(ay);
+
+        ptr = new Shell(this, IID_SHELL, bx, by, 0, 1, 1.0);
+       // actorList.push_back(ptr);
     }
 }
 
