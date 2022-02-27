@@ -73,10 +73,6 @@ StudentWorld* Actor::getWorld() const
 	return m_world;
 }
 
-
-
-
-
 /*****Sationary Actors Base Class*****/
 stationaryActors::stationaryActors(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
@@ -89,9 +85,6 @@ bool stationaryActors::canBlock() const
 {
 	return true;
 }
-
-
-
 
 /*****Bad Guy Actor Class*****/
 BadGuy::BadGuy(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
@@ -108,35 +101,34 @@ void BadGuy::doSomething()
 	}
 	doSomethingUnique();
 	//moving
-	//get where teh koopa wants to go
+	//get where teh badguy wants to go
 	double destinationX;
+	double destinationY = getY();
 	if (getDirection() == left)
 	{
 		destinationX = getX() - 1;
+		//can the badguy goes where it wants? if not turn around
+		if (!getWorld()->canMoveThere(this, destinationX, destinationY) || getWorld()->canMoveThere(this, destinationX - 7, destinationY - 1))
+		{
+			reverseActor();
+			return;
+		}
+		moveTo(destinationX, destinationY);
+		return;
 	}
 	else
 	{
 		destinationX = getX() + 1;
-	}
-	double destinationY = getY();
-
-	//can the koopa goes where it wants? if not turn around
-	if (!getWorld()->canMoveThere(this, destinationX, destinationY) || getWorld()->canMoveThere(this, destinationX - 7, destinationY - 1) || getWorld()->canMoveThere(this, destinationX + 7, destinationY - 1))
-	{
-		reverseActor();
-	}
-	//check if the path is blocked or empty the way the koopa is going 
-	if (getDirection() == left && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX, destinationY - 1))
-	{
+		if (!getWorld()->canMoveThere(this, destinationX, destinationY) || getWorld()->canMoveThere(this, destinationX + 7, destinationY - 1))
+		{
+			reverseActor();
+			return;
+		}
 		moveTo(destinationX, destinationY);
+		return;
 	}
-	else if (getDirection() == right && getWorld()->canMoveThere(this, destinationX, destinationY) && !getWorld()->canMoveThere(this, destinationX, destinationY - 1))
-	{
-		moveTo(destinationX, destinationY);
-	}
+	return;
 }
-
-
 
 
 /*****Goodie Base Class*****/
@@ -201,14 +193,69 @@ void Goodie::doSomething()
 	}
 }
 
-
-
 /*****Projectile Base Class*****/
 Projectile::Projectile(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Actor(world, imageID, startX, startY, startDirection, depth, size)
 {}
 Projectile::~Projectile()
 {}
+
+void Projectile::doSomething()
+{
+	if (!isAlive())
+	{
+		return;
+	}
+
+	doSomethingUnique();
+
+	//should the fireball be falling
+	if (getWorld()->canMoveThere(this, getX(), getY() - 2))
+	{
+		moveTo(getX(), getY() - 2);
+	}
+
+	//which way is the fireball facing
+	if (getDirection() == left)
+	{
+		//find where the fireball wants to go
+		double destX = getX() - 2;
+		double destY = getY();
+
+		//is this a valid position
+		//if not then die
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			setDead();
+			return;
+		}
+		//if it is then go there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+	else
+	{
+		//find where the fireball wants to go
+		double destX = getX() + 2;
+		double destY = getY();
+
+		//is this a valid position
+		//if not then die
+		if (!getWorld()->canMoveThere(this, destX, destY))
+		{
+			setDead();
+			return;
+		}
+		//if it is then go there
+		else
+		{
+			moveTo(destX, destY);
+		}
+	}
+}
+
 
 
 
@@ -302,11 +349,6 @@ void Pipe::bonk()
 //pipes are lame and don't do things
 void Pipe::doSomethingUnique()
 {}
-
-
-
-
-
 
 /*****Peach*****/
 Peach::Peach(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
@@ -640,9 +682,6 @@ void Peach::doSomethingUnique()
 }
 
 
-
-
-
 /*****Goomba Class*****/
 Goomba::Goomba(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:BadGuy(world, imageID, startX, startY, startDirection, depth, size)
@@ -705,9 +744,6 @@ void Goomba::doSomethingUnique()
 		return;
 	}
 }
-
-
-
 
 /*****Koopa Class*****/
 Koopa::Koopa(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
@@ -859,8 +895,6 @@ void Flower::doSomethingUnique()
 	}
 }
 
-
-
 /*****Star Goodie*****/
 Star::Star(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:Goodie(world, imageID, startX, startY, startDirection, depth, size)
@@ -907,56 +941,7 @@ void PeachFireball::doSomethingUnique()
 		setDead();
 		return;
 	}
-
-	//should the fireball be falling
-	if (getWorld()->canMoveThere(this, getX(), getY() - 2))
-	{
-		moveTo(getX(), getY() - 2);
-	}
-
-	//which way is the fireball facing
-	if (getDirection() == left)
-	{
-		//find where the fireball wants to go
-		double destX = getX() - 2;
-		double destY = getY();
-
-		//is this a valid position
-		//if not then die
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			setDead();
-			return;
-		}
-		//if it is then go there
-		else
-		{
-			moveTo(destX, destY);
-		}
-	}
-	else
-	{
-		//find where the fireball wants to go
-		double destX = getX() + 2;
-		double destY = getY();
-
-		//is this a valid position
-		//if not then die
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			setDead();
-			return;
-		}
-		//if it is then go there
-		else
-		{
-			moveTo(destX, destY);
-		}
-	}
 }
-
-
-
 
 /*****Shell Class *****/
 Shell::Shell(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
@@ -973,57 +958,7 @@ void Shell::doSomethingUnique()
 		setDead();
 		return;
 	}
-
-	//should the shell be falling
-	if (getWorld()->canMoveThere(this, getX(), getY() - 2))
-	{
-		moveTo(getX(), getY() - 2);
-	}
-
-	//which way is the shell facing
-	if (getDirection() == left)
-	{
-		//find where the shell wants to go
-		double destX = getX() - 2;
-		double destY = getY();
-
-		//is this a valid position
-		//if not then die
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			setDead();
-			return;
-		}
-		//if it is then go there
-		else
-		{
-			moveTo(destX, destY);
-		}
-	}
-	else
-	{
-		//find where the shell wants to go
-		double destX = getX() + 2;
-		double destY = getY();
-
-		//is this a valid position
-		//if not then die
-		if (!getWorld()->canMoveThere(this, destX, destY))
-		{
-			setDead();
-			return;
-		}
-		//if it is then go there
-		else
-		{
-			moveTo(destX, destY);
-		}
-	}
 }
-
-
-
-
 
 /******Level Ender Class*****/
 LevelEnder::LevelEnder(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
