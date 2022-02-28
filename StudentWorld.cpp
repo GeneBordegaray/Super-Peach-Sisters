@@ -223,15 +223,14 @@ void StudentWorld::display()
     {
         scoreboard << "StarPower! ";
     }
-    if (m_peach->getHasMushroom())
-    {
-        scoreboard << "JumpPower! ";
-    }
     if (m_peach->getHasFlower())
     {
         scoreboard << "ShootPower! ";
     }
-  
+    if (m_peach->getHasMushroom())
+    {
+        scoreboard << "JumpPower! ";
+    }
 
     setGameStatText(scoreboard.str());
 }
