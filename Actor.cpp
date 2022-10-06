@@ -2,7 +2,7 @@
 #include "StudentWorld.h"
 
 /*****Base Actor*****/
-Actor::Actor(StudentWorld * world, int imageID, int startX, int startY, int startDirection, int depth, double size)
+Actor::Actor(StudentWorld* world, int imageID, int startX, int startY, int startDirection, int depth, double size)
 	:GraphObject(imageID, startX, startY, startDirection, depth, size)
 {
 	m_world = world;
@@ -20,7 +20,7 @@ void Actor::doSomething()
 void Actor::bonk()
 {}
 
-bool Actor::canBlock() const 
+bool Actor::canBlock() const
 {
 	return false;
 }
@@ -35,7 +35,7 @@ int Actor::getGoodieType() const
 	return 0;
 }
 
-void Actor::sufferDamage() 
+void Actor::sufferDamage()
 {}
 
 bool Actor::isAlive() const
@@ -479,7 +479,7 @@ void Peach::decRecharge()
 
 
 //Peach when she has a mushroom power up
-void Peach::setHasMushroom(bool mush) 
+void Peach::setHasMushroom(bool mush)
 {
 	m_hasMushroom = mush;
 }
@@ -524,7 +524,7 @@ void Peach::bonk()
 	decHP();
 
 	//set temporary invincibility
-	setInvincible(remaining_invincbile+10);
+	setInvincible(remaining_invincbile + 10);
 
 	//turn off powers
 	if (getHasMushroom())
@@ -643,7 +643,7 @@ void Peach::doSomethingUnique()
 				moveTo(getX() - 4, getY());
 			}
 			//if we cant move there is a block or a pipe and we want to bonk it, but can't side bonk when jumping
-			else if(getJumpPower() <= 0)
+			else if (getJumpPower() <= 0)
 			{
 				getWorld()->moveOrBonk(this, getX() - 1, getY());
 			}
@@ -696,14 +696,14 @@ void Peach::doSomethingUnique()
 			}
 			//if does have shooting power
 			getWorld()->playSound(SOUND_PLAYER_FIRE);
-			
+
 			//set the recharge
 			setRecharge(8);
 
 			//which way should fireball go
 			if (getDirection() == left)
 			{
-				getWorld()->addActor(new PeachFireball(getWorld(), IID_PEACH_FIRE, int(getX() - 4), int(getY()), getDirection(), 1,  1.0));
+				getWorld()->addActor(new PeachFireball(getWorld(), IID_PEACH_FIRE, int(getX() - 4), int(getY()), getDirection(), 1, 1.0));
 			}
 			else
 			{
@@ -871,7 +871,7 @@ void Piranha::doSomethingUnique()
 		return;
 	}
 	//is peach close enough to shoot
-	if (abs(getWorld()->peachX() - int(this->getX())) < 8*SPRITE_HEIGHT)
+	if (abs(getWorld()->peachX() - int(this->getX())) < 8 * SPRITE_HEIGHT)
 	{
 		//do all this stuff
 		getWorld()->addActor(new PiranhaFireball(getWorld(), IID_PIRANHA_FIRE, int(getX()), int(getY()), getDirection(), 1, 1.0));

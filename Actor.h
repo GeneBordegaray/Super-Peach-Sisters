@@ -42,7 +42,7 @@ public:
 	StudentWorld* getWorld() const;
 
 private:
-	
+
 	StudentWorld* m_world;
 	bool m_alive;
 };
